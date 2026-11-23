@@ -1,0 +1,5 @@
+{
+  "test_id": "TC-A04",
+  "description": "handle_login does not record consecutive failed attempts or lock account",
+  "vulnerable": true
+}

@@ -1,0 +1,6 @@
+{
+  "test_id": "TC-A05",
+  "description": "id_token string concatenated directly into Google tokeninfo URL",
+  "unquoted_url": "https://oauth2.googleapis.com/tokeninfo?id_token=id_token_value&admin=true#extra",
+  "vulnerable": true
+}

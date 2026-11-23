@@ -1,0 +1,8 @@
+{
+  "test_id": "TC-A02",
+  "description": "Direct untrusted client can spoof IP via X-Forwarded-For",
+  "physical_ip": "127.0.0.1",
+  "spoofed_header": "203.0.113.195",
+  "resolved_ip": "203.0.113.195",
+  "vulnerable": true
+}

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In & Register — NerdLume</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/svg+xml" href="NerdLume_Symbol.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-system.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+.auth-page { background: #090a0f; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; position: relative; }
+.auth-card { background: #0f1117; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; width: 100%; max-width: 480px; padding: 36px 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); animation: slideUp 0.4s ease; }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.input-icon-wrap { position: relative; }
+.input-icon-wrap input { width: 100%; background: #161b27; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; color: #fff; padding: 11px 14px 11px 40px !important; font-size: 14px; outline: none; transition: border 0.2s; }
+.input-icon-wrap input:focus { border-color: var(--accent, #22c55e); }
+.input-icon-wrap .ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 15px; color: #888; pointer-events: none; }
+.strength-bar { height: 4px; border-radius: 2px; background: #222; margin-top: 6px; overflow: hidden; }
+.strength-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 0.3s, background 0.3s; }
+.pass-toggle { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 14px; color: #888; user-select: none; }
+.privacy-note { font-size: 12px; color: #888; text-align: center; margin-top: 16px; line-height: 1.6; }
+.privacy-note a { color: var(--accent, #22c55e); }
+.divider-text { display: flex; align-items: center; gap: 12px; color: #666; font-size: 12px; margin: 20px 0; }
+.divider-text::before, .divider-text::after { content: ''; flex: 1; height: 1px; background: rgba(255, 255, 255, 0.1); }
+.subtitle { color: #8a99ad; font-size: 13.5px; margin-bottom: 20px; text-align: center; }
+.social-btns { display: flex; justify-content: center; margin-bottom: 4px; }
+.social-btn { border: 1px solid rgba(255,255,255,0.15); background: #161b27; color: #fff; border-radius: 10px; padding: 11px 24px; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 9px; transition: all 0.2s ease; width: 100%; cursor: pointer; }
+.social-btn:hover { border-color: var(--accent, #22c55e); background: rgba(34, 197, 94, 0.08); }
+.form-group { margin-bottom: 14px; text-align: left; }
+.form-group label { display: block; font-size: 12.5px; font-weight: 600; color: #ccc; margin-bottom: 6px; }
+.form-check { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: #aaa; margin: 12px 0; line-height: 1.45; text-align: left; }
+.form-check input { margin-top: 2px; accent-color: var(--accent, #22c55e); cursor: pointer; }
+.form-submit { width: 100%; background: var(--accent, #22c55e); color: #07080d; font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; padding: 13px; cursor: pointer; transition: all 0.2s ease; margin-top: 10px; }
+.form-submit:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); }
+.auth-switch { font-size: 13.5px; color: #aaa; text-align: center; margin-top: 20px; }
+.auth-switch a { color: var(--accent, #22c55e); font-weight: 600; cursor: pointer; text-decoration: underline; }
+@media (max-width: 560px) { .auth-card { padding: 24px 20px; } }
+</style>
+</head>
+<body>
+
+<div class="auth-page">
+  <!-- Back to Home -->
+  <div style="position:absolute;top:20px;left:24px;">
+    <a href="index.html" style="color:rgba(255,255,255,0.7);font-size:14px;display:flex;align-items:center;gap:6px;text-decoration:none;">
+      ← Back to NerdLume
+    </a>
+  </div>
+
+  <div class="auth-card" id="signupCard">
+    <div class="logo" style="justify-content:center;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+      <div class="logo-icon" style="width:38px;height:38px;padding:3px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);box-shadow:0 0 16px rgba(34,197,94,0.35);">
+        <img src="NerdLume_Symbol.svg" alt="NerdLume" style="width:100%;height:100%;object-fit:contain;">
+      </div>
+      <span class="logo-text" style="font-size:24px;font-weight:800;color:#fff;">Nerd<span style="color:var(--accent,#22c55e);">Lume</span></span>
+    </div>
+
+    <h2 id="authTitle" style="font-size:22px;font-weight:700;text-align:center;color:#fff;">Create Account</h2>
+    <p class="subtitle" id="authSubtitle">Join millions of students learning smarter with NerdLume.</p>
+
+    <!-- Google Sign-In button (always visible, triggers GIS on click) -->
+    <div class="social-btns">
+      <!-- Hidden GIS initializer (no auto-render) -->
+      <div id="g_id_onload" data-client_id="__GOOGLE_CLIENT_ID__" data-callback="handleGoogleCredential" data-auto_prompt="false" style="display:none;"></div>
+      <button class="social-btn" id="googleBtn" onclick="handleGoogleClick()" type="button">
+        <svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Continue with Google
+      </button>
+    </div>
+
+    <div class="divider-text">or continue with email</div>
+
+    <!-- SIGNUP FORM -->
+    <div id="signupForm">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-group">
+          <label>First Name</label>
+          <div class="input-icon-wrap">
+            <span class="ico"><i data-lucide="user" style="width:16px;height:16px;"></i></span>
+            <input type="text" id="firstName" placeholder="Arjun" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <div class="input-icon-wrap">
+            <span class="ico"><i data-lucide="user" style="width:16px;height:16px;"></i></span>
+            <input type="text" id="lastName" placeholder="Mehta">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address</label>
+        <div class="input-icon-wrap">
+          <span class="ico"><i data-lucide="mail" style="width:16px;height:16px;"></i></span>
+          <input type="email" id="signupEmail" placeholder="arjun@example.com" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Mobile Number</label>
+        <div class="input-icon-wrap">
+          <span class="ico"><i data-lucide="phone" style="width:16px;height:16px;"></i></span>
+          <input type="tel" id="mobile" placeholder="+91 98765 43210">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-icon-wrap">
+          <span class="ico"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>
+          <input type="password" id="signupPassword" placeholder="Min 8 characters" oninput="checkStrength(this.value)" required>
+          <span class="pass-toggle" onclick="togglePass('signupPassword')" aria-label="Toggle Password"><i data-lucide="eye" style="width:16px;height:16px;"></i></span>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div style="font-size:11px;color:#888;margin-top:3px;" id="strengthLabel">Enter a password</div>
+      </div>
+
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <div class="input-icon-wrap">
+          <span class="ico"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>
+          <input type="password" id="confirmPassword" placeholder="Re-enter password" required>
+          <span class="pass-toggle" onclick="togglePass('confirmPassword')" aria-label="Toggle Password"><i data-lucide="eye" style="width:16px;height:16px;"></i></span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Date of Birth</label>
+        <div class="input-icon-wrap">
+          <span class="ico"><i data-lucide="calendar" style="width:16px;height:16px;"></i></span>
+          <input type="date" id="dob">
+        </div>
+      </div>
+
+      <label class="form-check">
+        <input type="checkbox" id="terms" checked>
+        I agree to the <a href="#" style="color:var(--accent,#22c55e)">Terms of Service</a> and <a href="#" style="color:var(--accent,#22c55e)">Privacy Policy</a>
+      </label>
+
+      <label class="form-check">
+        <input type="checkbox" id="newsletter" checked>
+        Send me study tips &amp; personalized recommendations
+      </label>
+
+      <button class="form-submit" onclick="handleSignup()">Create My Account →</button>
+    </div>
+
+    <!-- LOGIN FORM (hidden initially) -->
+    <div id="loginForm" style="display:none;">
+      <div class="form-group">
+        <label>Email / Username / Mobile</label>
+        <div class="input-icon-wrap">
+          <span class="ico"><i data-lucide="mail" style="width:16px;height:16px;"></i></span>
+          <input type="text" id="loginEmail" placeholder="your@email.com or username" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-icon-wrap">
+          <span class="ico"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>
+          <input type="password" id="loginPassword" placeholder="Your password" required>
+          <span class="pass-toggle" onclick="togglePass('loginPassword')" aria-label="Toggle Password"><i data-lucide="eye" style="width:16px;height:16px;"></i></span>
+        </div>
+        <div style="text-align:right;margin-top:6px;"><a href="#" style="font-size:12px;color:var(--accent,#22c55e);font-weight:600;text-decoration:none;">Forgot Password?</a></div>
+      </div>
+      <label class="form-check">
+        <input type="checkbox" checked>
+        Keep me signed in
+      </label>
+      <button class="form-submit" onclick="handleLogin()">Sign In to NerdLume →</button>
+    </div>
+
+    <div class="auth-switch" id="authSwitch">
+      Already have an account? <a onclick="toggleMode()">Sign In</a>
+    </div>
+
+    <p class="privacy-note">
+      By continuing, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.<br>
+      NerdLume never shares your data without your consent.
+    </p>
+  </div>
+</div>
+
+<script>
+let isSignupMode = true;
+
+// Check query param for initial mode or requested plan
+const urlParams = new URLSearchParams(window.location.search);
+const initialPlan = urlParams.get('plan') || 'free';
+const modeParam = urlParams.get('mode');
+
+if (modeParam === 'login') {
+  isSignupMode = false;
+}
+
+// All demo accounts removed as requested
+const DEMO_USERS = [];
+
+function saveSession(firstName, email, plan = initialPlan, explicitUsername = '', lastName = '') {
+  const username = explicitUsername || (email || '').split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
+  const sessionData = {
+    email,
+    username: username || 'student',
+    firstName,
+    lastName,
+    plan: plan || 'free',
+    joinDate: new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
+    notesCount: 0,
+    sessionsCount: 0,
+    filesCount: 0
+  };
+  localStorage.setItem('nb_session', JSON.stringify(sessionData));
+}
+
+function toggleMode() {
+  isSignupMode = !isSignupMode;
+  document.getElementById('signupForm').style.display = isSignupMode ? 'block' : 'none';
+  document.getElementById('loginForm').style.display = isSignupMode ? 'none' : 'block';
+  document.getElementById('authTitle').textContent = isSignupMode ? 'Create Account' : 'Welcome Back!';
+  document.getElementById('authSubtitle').textContent = isSignupMode ? 'Join millions of students learning smarter with NerdLume.' : 'Sign in to your NerdLume account.';
+  document.getElementById('authSwitch').innerHTML = isSignupMode
+    ? 'Already have an account? <a onclick="toggleMode()">Sign In</a>'
+    : 'New to NerdLume? <a onclick="toggleMode()">Create Account</a>';
+}
+
+if (!isSignupMode) {
+  toggleMode();
+}
+
+function checkStrength(val) {
+  const fill = document.getElementById('strengthFill');
+  const label = document.getElementById('strengthLabel');
+  if (!val) { fill.style.width = '0%'; label.textContent = 'Enter a password'; return; }
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    { w: '0%', c: '#ccc', t: '' },
+    { w: '25%', c: '#ef5350', t: 'Weak' },
+    { w: '50%', c: '#ff9800', t: 'Fair' },
+    { w: '75%', c: '#66bb6a', t: 'Good' },
+    { w: '100%', c: '#2e7d32', t: 'Strong' },
+  ];
+  const lvl = levels[score];
+  fill.style.width = lvl.w;
+  fill.style.background = lvl.c;
+  label.textContent = lvl.t;
+  label.style.color = lvl.c;
+}
+
+function togglePass(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+async function handleSignup() {
+  const first = document.getElementById('firstName').value.trim();
+  const last = document.getElementById('lastName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const mobile = document.getElementById('mobile').value.trim();
+  const pass = document.getElementById('signupPassword').value;
+  const confirm = document.getElementById('confirmPassword').value;
+  const terms = document.getElementById('terms').checked;
+
+  if (!first || !email || !pass) { showMsg('Please fill in all required fields.', 'red'); return; }
+  if (pass !== confirm) { showMsg('Passwords do not match!', 'red'); return; }
+  if (!terms) { showMsg('Please accept the Terms of Service.', 'red'); return; }
+  if (pass.length < 8) { showMsg('Password must be at least 8 characters.', 'red'); return; }
+
+  const NB_API = window.NB_API_BASE || (window.location.protocol.startsWith('http') ? window.location.origin : 'http://localhost:5050');
+  
+  try {
+    const res = await fetch(`${NB_API}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: first,
+        lastName: last,
+        email: email,
+        mobile: mobile,
+        password: pass,
+        plan: initialPlan
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      if (data.token) localStorage.setItem('nb_api_token', data.token);
+      localStorage.setItem('nb_session', JSON.stringify(data.user));
+      showMsg('Account created! Redirecting...', '#28a745');
+      setTimeout(() => window.location.href = 'index.html', 1200);
+      return;
+    } else {
+      showMsg((data.error || 'Signup failed'), 'red');
+      return;
+    }
+  } catch (err) {
+    // Local fallback when backend server is offline
+    saveSession(first, email, initialPlan, '', last);
+    showMsg('Account created! Redirecting...', '#28a745');
+    setTimeout(() => window.location.href = 'index.html', 1200);
+  }
+}
+
+async function handleLogin() {
+  const identifier = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  if (!identifier || !pass) { showMsg('Please enter your credentials.', 'red'); return; }
+
+  const NB_API = window.NB_API_BASE || (window.location.protocol.startsWith('http') ? window.location.origin : 'http://localhost:5050');
+  
+  try {
+    const res = await fetch(`${NB_API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: identifier,
+        password: pass
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      if (data.token) localStorage.setItem('nb_api_token', data.token);
+      localStorage.setItem('nb_session', JSON.stringify(data.user));
+      showMsg('Signed in successfully!', '#28a745');
+      setTimeout(() => window.location.href = 'index.html', 1200);
+      return;
+    } else {
+      showMsg((data.error || 'Invalid credentials'), 'red');
+      return;
+    }
+  } catch (err) {
+    // Local fallback for offline testing
+    const found = DEMO_USERS.find(u => (u.email.toLowerCase() === identifier.toLowerCase() || u.username.toLowerCase() === identifier.toLowerCase()) && u.password === pass);
+    if (found) {
+      saveSession(found.firstName, found.email, found.plan, found.username, found.lastName);
+      showMsg('Signed in successfully!', '#28a745');
+      setTimeout(() => window.location.href = 'index.html', 1200);
+    } else if (identifier.length >= 3) {
+      const name = identifier.split('@')[0];
+      saveSession(name, identifier, 'free');
+      showMsg('Signed in successfully!', '#28a745');
+      setTimeout(() => window.location.href = 'index.html', 1200);
+    } else {
+      showMsg('Invalid credentials', 'red');
+    }
+  }
+}
+
+// ── Google Sign-In ──────────────────────────────────────────
+// Set window.GOOGLE_CLIENT_ID (e.g. from a config script) OR replace __GOOGLE_CLIENT_ID__ below.
+const _GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID || '__GOOGLE_CLIENT_ID__';
+
+function handleGoogleClick() {
+  if (!_GOOGLE_CLIENT_ID || _GOOGLE_CLIENT_ID === '__GOOGLE_CLIENT_ID__') {
+    showMsg('Google Sign-In is not configured yet. Add your GOOGLE_CLIENT_ID to signin.html.', 'red');
+    return;
+  }
+  if (typeof google === 'undefined' || !google.accounts) {
+    showMsg('Google services failed to load. Check your internet connection.', 'red');
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: _GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential,
+    auto_select: false
+  });
+  google.accounts.id.prompt(notification => {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      // One Tap blocked (e.g. user dismissed it) — fall back to popup
+      google.accounts.id.renderButton(
+        document.getElementById('googleBtn').parentElement,
+        { theme: 'filled_black', size: 'large', width: 416, text: 'signin_with' }
+      );
+    }
+  });
+}
+
+async function handleGoogleCredential(response) {
+  const idToken = response.credential;
+  if (!idToken) { showMsg('Google sign-in failed. No credential returned.', 'red'); return; }
+
+  showMsg('Signing in with Google…', '#1565c0');
+
+  const NB_API = window.NB_API_BASE || (window.location.protocol.startsWith('http') ? window.location.origin : 'http://localhost:5050');
+
+  try {
+    const res = await fetch(`${NB_API}/api/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_token: idToken })
+    });
+    const data = await res.json();
+    if (res.ok && data.token) {
+      localStorage.setItem('nb_api_token', data.token);
+      localStorage.setItem('nb_session', JSON.stringify(data.user));
+      showMsg('Signed in with Google! Redirecting…', '#28a745');
+      setTimeout(() => window.location.href = 'index.html', 1000);
+    } else {
+      showMsg(data.error || 'Google sign-in failed. Please try again.', 'red');
+    }
+  } catch (err) {
+    showMsg('Could not reach the server. Please check your connection.', 'red');
+  }
+}
+
+function showMsg(msg, color) {
+  let el = document.getElementById('authMsg');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'authMsg';
+    el.style.cssText = 'padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;text-align:center;margin-bottom:14px;';
+    document.getElementById('authTitle').parentNode.insertBefore(el, document.getElementById('authTitle').nextSibling);
+  }
+  el.style.background = color === 'red' ? '#321c1c' : '#1b3320';
+  el.style.color = color === 'red' ? '#ff6b6b' : '#4ade80';
+  el.style.border = `1px solid ${color === 'red' ? '#7f1d1d' : '#14532d'}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.lucide) { lucide.createIcons(); }
+});
+</script>
+<script src="bg-animation.js"></script>
+</body>
+</html>

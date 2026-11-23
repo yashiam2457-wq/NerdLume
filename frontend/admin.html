@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NerdLume — Admin Dashboard</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/svg+xml" href="NerdLume_Symbol.svg">
+<link rel="stylesheet" href="design-system.css">
+<link rel="stylesheet" href="styles.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+.live-dot { display:inline-block; width:8px; height:8px; background:#28a745; border-radius:50%; animation:blink 1.5s infinite; margin-right:6px; }
+.kpi-trend { font-size:11px; padding:2px 8px; border-radius:4px; font-weight:700; }
+.kpi-up { background:#e8f5e9; color:#2e7d32; }
+.kpi-down { background:#ffebee; color:#c62828; }
+.line-chart-svg { width:100%; height:100px; overflow:visible; }
+.sparkline-svg { width:100%; height:40px; }
+.admin-table-wrap { overflow-x:auto; }
+.search-rank { display:inline-block; width:22px; height:22px; border-radius:50%; background:var(--accent); color:white; font-size:11px; font-weight:700; text-align:center; line-height:22px; margin-right:8px; }
+.search-rank.silver { background:#9e9e9e; }
+.search-rank.bronze { background:#795548; }
+.device-bar { display:flex; height:12px; border-radius:6px; overflow:hidden; gap:2px; margin:8px 0; }
+.device-seg { height:100%; border-radius:2px; }
+.geo-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f0f0f0; }
+.geo-flag { font-size:20px; }
+.geo-bar-wrap { flex:1; }
+.geo-bar-track { height:6px; background:#f0f0f0; border-radius:3px; margin-top:3px; overflow:hidden; }
+.geo-bar-fill { height:100%; background:linear-gradient(90deg,var(--accent),#ffcc80); border-radius:3px; }
+.metric-pill { display:inline-flex; align-items:center; gap:6px; background:var(--gray-100); border-radius:6px; padding:6px 12px; font-size:12px; font-weight:600; }
+.pulse-ring { display:inline-block; width:10px; height:10px; border-radius:50%; background:#28a745; box-shadow:0 0 0 4px rgba(40,167,69,0.2); animation:pulseRing 2s infinite; }
+@keyframes pulseRing { 0%,100%{box-shadow:0 0 0 4px rgba(40,167,69,0.2);}50%{box-shadow:0 0 0 8px rgba(40,167,69,0.1);} }
+.funnel-step { display:flex; align-items:center; gap:14px; padding:10px 0; }
+.funnel-bar-wrap { flex:1; }
+.funnel-bar { height:28px; border-radius:4px; display:flex; align-items:center; padding:0 12px; font-size:12px; font-weight:700; color:white; transition:width 1s ease; }
+.admin-section-tabs { display:flex; gap:2px; border-bottom:2px solid var(--gray-200); margin-bottom:20px; }
+.admin-tab { background:none; border:none; padding:10px 18px; font-size:13px; font-weight:600; font-family:Sora,sans-serif; cursor:pointer; color:var(--gray-500); border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.2s; }
+.admin-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="admin-layout">
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div class="admin-logo">
+      <img src="NerdLume_Symbol.svg" alt="NerdLume" style="width:28px;height:28px;object-fit:contain;">
+      <div>
+        <span style="font-size:15px;font-weight:700;color:white;display:block;">NerdLume</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.4);">Admin Panel v2.5</span>
+      </div>
+    </div>
+
+    <div class="admin-nav">
+      <div class="admin-nav-section">Main</div>
+      <a href="#" class="active"><i data-lucide="layout-dashboard" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Dashboard</a>
+      <a href="#"><i data-lucide="line-chart" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Analytics</a>
+      <a href="#"><i data-lucide="shopping-bag" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Orders</a>
+      <a href="#"><i data-lucide="users" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Users</a>
+
+      <div class="admin-nav-section">Catalog</div>
+      <a href="#"><i data-lucide="package" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Products</a>
+      <a href="#"><i data-lucide="tag" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Categories</a>
+      <a href="#"><i data-lucide="ticket" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Coupons</a>
+      <a href="#"><i data-lucide="star" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Reviews</a>
+
+      <div class="admin-nav-section">Content</div>
+      <a href="#"><i data-lucide="film" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Streaming</a>
+      <a href="#"><i data-lucide="calendar" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Bookings</a>
+      <a href="#"><i data-lucide="image" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Banners</a>
+
+      <div class="admin-nav-section">System</div>
+      <a href="#"><i data-lucide="settings" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Settings</a>
+      <a href="#"><i data-lucide="bell" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Notifications</a>
+      <a href="#"><i data-lucide="shield" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Security</a>
+      <a href="index.html"><i data-lucide="store" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;"></i> Back to Store</a>
+    </div>
+
+    <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.1);margin-top:auto;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:14px;">A</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:white;">Admin User</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="admin-main">
+    <!-- HEADER -->
+    <div class="admin-header">
+      <div>
+        <h1>Dashboard Overview</h1>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:4px;font-size:13px;color:var(--gray-500);">
+          <span>Live Data</span>
+          <span>Last updated: <strong id="lastUpdated"></strong></span>
+          <span>Feb 17, 2026</span>
+        </div>
+      </div>
+      <div class="admin-header-actions">
+        <button class="admin-btn outline" onclick="refreshData()"><i data-lucide="refresh-cw" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Refresh</button>
+        <button class="admin-btn"><i data-lucide="download" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Export Report</button>
+      </div>
+    </div>
+
+    <!-- DATE RANGE TABS -->
+    <div class="admin-section-tabs">
+      <button class="admin-tab active" onclick="setDateRange('today', this)">Today</button>
+      <button class="admin-tab" onclick="setDateRange('week', this)">This Week</button>
+      <button class="admin-tab" onclick="setDateRange('month', this)">This Month</button>
+      <button class="admin-tab" onclick="setDateRange('quarter', this)">Quarter</button>
+      <button class="admin-tab" onclick="setDateRange('year', this)">Year</button>
+    </div>
+
+    <!-- KPI STATS GRID -->
+    <div class="stats-grid" id="statsGrid">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- CHARTS ROW 1 -->
+    <div class="charts-row">
+      <!-- LINE CHART - Revenue -->
+      <div class="admin-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3>Revenue Overview</h3>
+          <div style="display:flex;gap:16px;font-size:12px;">
+            <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:3px;background:var(--accent);display:inline-block;border-radius:2px;"></span>Revenue</span>
+            <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:3px;background:var(--accent2);display:inline-block;border-radius:2px;"></span>Orders</span>
+          </div>
+        </div>
+        <svg class="line-chart-svg" viewBox="0 0 500 100" id="revenueChart"></svg>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-500);margin-top:8px;" id="chartLabels"></div>
+      </div>
+
+      <!-- DONUT CHART - Category Split -->
+      <div class="admin-card">
+        <h3>Sales by Category</h3>
+        <div class="donut-wrap">
+          <div class="donut-chart">
+            <div class="donut-hole">
+              <span>₹2.4Cr</span>
+              <span>Total Sales</span>
+            </div>
+          </div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOST VISITED PAGES + SEARCH TRENDS -->
+    <div class="data-tables-row">
+
+      <!-- Most Visited Pages -->
+      <div class="admin-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3>Most Visited Pages</h3>
+          <span style="font-size:12px;color:var(--gray-500);">Last 24 hours</span>
+        </div>
+        <div class="progress-list" id="pageViewsList"></div>
+      </div>
+
+      <!-- Top Searches -->
+      <div class="admin-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3>Top Search Terms</h3>
+          <span style="font-size:12px;color:var(--gray-500);">Live · Today</span>
+        </div>
+        <table class="admin-table" id="searchTable">
+          <thead><tr><th>Rank</th><th>Search Term</th><th>Searches</th><th>Trend</th></tr></thead>
+          <tbody id="searchTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ROW 3 - Orders + Users -->
+    <div class="data-tables-row">
+
+      <!-- Recent Orders -->
+      <div class="admin-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3>Recent Orders</h3>
+          <button class="admin-btn" style="font-size:12px;padding:6px 12px;">View All</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Time</th></tr></thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Conversion Funnel -->
+      <div class="admin-card">
+        <h3>Conversion Funnel</h3>
+        <div id="funnelChart"></div>
+        <div style="margin-top:16px;padding:12px;background:var(--gray-100);border-radius:8px;">
+          <div style="font-size:12px;font-weight:600;color:var(--gray-500);margin-bottom:6px;">CONVERSION RATE</div>
+          <div style="font-size:28px;font-weight:800;color:var(--success);">3.82%</div>
+          <div style="font-size:12px;color:var(--gray-500);">↑ 0.4% from last week</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4 - Geographic + Device -->
+    <div class="charts-row">
+
+      <!-- Geographic Distribution -->
+      <div class="admin-card">
+        <h3>Traffic by Geography</h3>
+        <div id="geoList"></div>
+      </div>
+
+      <!-- Device + Live Activity -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <div class="admin-card" style="flex:1;">
+          <h3>Device Breakdown</h3>
+          <div class="device-bar" id="deviceBar"></div>
+          <div id="deviceLegend"></div>
+        </div>
+
+        <div class="admin-card" style="flex:1;">
+          <h3><span class="pulse-ring"></span> Live Activity Feed</h3>
+          <div class="activity-feed" id="activityFeed"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 5 - New Users + Revenue per Cat -->
+    <div class="data-tables-row">
+      <div class="admin-card">
+        <h3>New User Registrations</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+          <div style="text-align:center;padding:16px;background:var(--gray-100);border-radius:8px;">
+            <div style="font-size:24px;font-weight:800;">1,247</div>
+            <div style="font-size:12px;color:var(--gray-500);">Today</div>
+            <div style="font-size:11px;font-weight:700;color:var(--success);">↑ 12%</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--gray-100);border-radius:8px;">
+            <div style="font-size:24px;font-weight:800;">9,832</div>
+            <div style="font-size:12px;color:var(--gray-500);">This Week</div>
+            <div style="font-size:11px;font-weight:700;color:var(--success);">↑ 8%</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--gray-100);border-radius:8px;">
+            <div style="font-size:24px;font-weight:800;">47,290</div>
+            <div style="font-size:12px;color:var(--gray-500);">This Month</div>
+            <div style="font-size:11px;font-weight:700;color:var(--success);">↑ 22%</div>
+          </div>
+        </div>
+        <table class="admin-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Joined</th><th>Status</th></tr></thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="admin-card">
+        <h3>Search Keywords Heatmap</h3>
+        <div class="search-tags-grid" id="searchHeatmap"></div>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
+          <h3 style="font-size:14px;margin-bottom:12px;">Zero Result Searches</h3>
+          <div id="zeroSearches"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYSTEM HEALTH -->
+    <div class="admin-card" style="margin-bottom:24px;">
+      <h3>System Health Monitor</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-top:4px;">
+        <div class="metric-pill" style="flex-direction:column;align-items:flex-start;padding:14px;background:white;border:1px solid #e0e0e0;border-radius:8px;">
+          <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">API Response</div>
+          <div style="font-size:22px;font-weight:800;color:var(--success);">42ms</div>
+          <div style="font-size:11px;color:var(--success);">↑ Excellent</div>
+        </div>
+        <div class="metric-pill" style="flex-direction:column;align-items:flex-start;padding:14px;background:white;border:1px solid #e0e0e0;border-radius:8px;">
+          <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Uptime</div>
+          <div style="font-size:22px;font-weight:800;color:var(--success);">99.97%</div>
+          <div style="font-size:11px;color:var(--success);">Last 30 days</div>
+        </div>
+        <div class="metric-pill" style="flex-direction:column;align-items:flex-start;padding:14px;background:white;border:1px solid #e0e0e0;border-radius:8px;">
+          <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">CPU Usage</div>
+          <div style="font-size:22px;font-weight:800;color:#f57f17;">34%</div>
+          <div style="font-size:11px;color:#f57f17;">Normal Load</div>
+        </div>
+        <div class="metric-pill" style="flex-direction:column;align-items:flex-start;padding:14px;background:white;border:1px solid #e0e0e0;border-radius:8px;">
+          <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Memory</div>
+          <div style="font-size:22px;font-weight:800;color:var(--success);">62%</div>
+          <div style="font-size:11px;color:var(--success);">8.4 / 16GB</div>
+        </div>
+        <div class="metric-pill" style="flex-direction:column;align-items:flex-start;padding:14px;background:white;border:1px solid #e0e0e0;border-radius:8px;">
+          <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">DB Queries/s</div>
+          <div style="font-size:22px;font-weight:800;color:var(--accent2);">1,284</div>
+          <div style="font-size:11px;color:var(--accent2);">Peak: 4,200</div>
+        </div>
+        <div class="metric-pill" style="flex-direction:column;align-items:flex-start;padding:14px;background:white;border:1px solid #e0e0e0;border-radius:8px;">
+          <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Error Rate</div>
+          <div style="font-size:22px;font-weight:800;color:var(--success);">0.03%</div>
+          <div style="font-size:11px;color:var(--success);">↓ from 0.05%</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ======= DATA =======
+const DATA = {
+  today: { revenue: '₹18,47,290', orders: '3,847', users: '1,247', sessions: '94,382', convRate: '3.82%', avgOrder: '₹4,802', revChange: '+18.4%', ordChange: '+22.1%', usrChange: '+12.3%', sesChange: '+9.7%' },
+  week:  { revenue: '₹1,24,83,490', orders: '28,341', users: '9,832', sessions: '6,42,180', convRate: '4.12%', avgOrder: '₹4,404', revChange: '+14.2%', ordChange: '+19.8%', usrChange: '+8.1%', sesChange: '+11.3%' },
+  month: { revenue: '₹5,42,90,120', orders: '1,12,489', users: '47,290', sessions: '28,40,930', convRate: '3.96%', avgOrder: '₹4,827', revChange: '+28.7%', ordChange: '+31.2%', usrChange: '+22.4%', sesChange: '+18.9%' },
+  quarter: { revenue: '₹16,28,74,400', orders: '3,48,920', users: '1,42,890', sessions: '87,34,200', convRate: '4.01%', avgOrder: '₹4,667', revChange: '+42.1%', ordChange: '+38.4%', usrChange: '+35.2%', sesChange: '+29.7%' },
+  year:  { revenue: '₹64,82,34,900', orders: '13,94,820', users: '5,78,490', sessions: '3,48,29,000', convRate: '4.00%', avgOrder: '₹4,651', revChange: '+78.4%', ordChange: '+82.1%', usrChange: '+64.3%', sesChange: '+71.2%' },
+};
+
+const PAGE_VIEWS = [
+  { page: 'Homepage / Products', views: 94382, change: '+18%' },
+  { page: '/products/electronics', views: 47290, change: '+24%' },
+  { page: '/products/clothes', views: 38490, change: '+12%' },
+  { page: '/streaming/movies', views: 29840, change: '+41%' },
+  { page: '/booking/travel', views: 22190, change: '+8%' },
+  { page: '/products/food', views: 18490, change: '+29%' },
+  { page: '/streaming/anime', views: 16840, change: '+67%' },
+  { page: '/products/pizza', views: 14290, change: '+33%' },
+];
+
+const SEARCHES = [
+  { term: 'iPhone 15 Pro', count: 12480, trend: '↑ +34%' },
+  { term: 'Nike shoes', count: 9870, trend: '↑ +18%' },
+  { term: 'Samsung TV 4K', count: 8340, trend: '↑ +22%' },
+  { term: 'Biryani near me', count: 7290, trend: '↑ +44%' },
+  { term: 'Attack on Titan', count: 6840, trend: '↑ +89%' },
+  { term: 'Bali holiday package', count: 5920, trend: '↑ +31%' },
+  { term: 'Pizza delivery', count: 5480, trend: '↑ +27%' },
+  { term: 'Women ethnic wear', count: 4980, trend: '↑ +15%' },
+  { term: 'Laptop under 50000', count: 4780, trend: '↑ +9%' },
+  { term: 'Wireless earbuds', count: 4320, trend: '↓ -3%' },
+];
+
+const ORDERS = [
+  { id: '#SV-2025-94782', customer: 'Arjun Mehta', amount: '₹22,990', status: 'active', time: '2 min ago' },
+  { id: '#SV-2025-94781', customer: 'Priya Sharma', amount: '₹1,299', status: 'active', time: '5 min ago' },
+  { id: '#SV-2025-94780', customer: 'Rohan Verma', amount: '₹42,990', status: 'pending', time: '8 min ago' },
+  { id: '#SV-2025-94779', customer: 'Kavya Nair', amount: '₹5,999', status: 'active', time: '14 min ago' },
+  { id: '#SV-2025-94778', customer: 'Aditya Singh', amount: '₹349', status: 'active', time: '21 min ago' },
+  { id: '#SV-2025-94777', customer: 'Meera Rao', amount: '₹74,990', status: 'pending', time: '28 min ago' },
+  { id: '#SV-2025-94776', customer: 'Vikram Shah', amount: '₹799', status: 'info', time: '35 min ago' },
+  { id: '#SV-2025-94775', customer: 'Ananya Patel', amount: '₹12,990', status: 'error', time: '52 min ago' },
+];
+
+const USERS = [
+  { name: 'Arjun Mehta', email: 'arjun@gmail.com', plan: 'Prime', joined: 'Today 10:22', status: 'active' },
+  { name: 'Priya Sharma', email: 'priya@yahoo.com', plan: 'Free', joined: 'Today 09:47', status: 'active' },
+  { name: 'Rohan Verma', email: 'rohan@outlook.com', plan: 'Prime', joined: 'Today 09:12', status: 'pending' },
+  { name: 'Kavya Nair', email: 'kavya@gmail.com', plan: 'Free', joined: 'Today 08:55', status: 'active' },
+  { name: 'Aditya Singh', email: 'aditya@icloud.com', plan: 'Business', joined: 'Today 08:30', status: 'active' },
+];
+
+const GEO = [
+  { flag: '🇮🇳', country: 'India', sessions: '58,490', pct: 82 },
+  { flag: '🇺🇸', country: 'United States', sessions: '8,290', pct: 14 },
+  { flag: '🇬🇧', country: 'United Kingdom', sessions: '4,120', pct: 8 },
+  { flag: '🇦🇺', country: 'Australia', sessions: '2,890', pct: 5 },
+  { flag: '🇸🇬', country: 'Singapore', sessions: '1,840', pct: 4 },
+];
+
+const ACTIVITY = [
+  { msg: 'New order #SV-94782 — Sony Headphones ₹22,990 by Arjun Mehta', time: '2s ago', type: 'active' },
+  { msg: 'User Priya Sharma just signed up via Google OAuth', time: '45s ago', type: 'info' },
+  { msg: 'Flash sale activated — Electronics category 60% off', time: '2m ago', type: 'warn' },
+  { msg: 'Payment gateway: 3,847 transactions processed (₹18.4L)', time: '5m ago', type: 'active' },
+  { msg: 'Search spike detected: "Attack on Titan" +89% in 30 min', time: '8m ago', type: 'warn' },
+  { msg: 'New product review: Sony WH-1000XM5 — 5 stars by Rahul K.', time: '12m ago', type: 'info' },
+];
+
+const FUNNEL = [
+  { label: 'Page Visits', count: 94382, pct: 100, color: '#1565c0' },
+  { label: 'Product Viewed', count: 61349, pct: 65, color: '#0288d1' },
+  { label: 'Added to Cart', count: 24340, pct: 26, color: '#FF9500' },
+  { label: 'Checkout Started', count: 7580, pct: 8, color: '#e65100' },
+  { label: 'Order Completed', count: 3602, pct: 3.82, color: '#28a745' },
+];
+
+const HEATMAP = [
+  { word: 'iPhone 16', size: 'hot' }, { word: 'Biryani', size: 'hot' }, { word: 'Nike', size: 'hot' },
+  { word: 'Samsung TV', size: 'warm' }, { word: 'Flipkart sale', size: 'warm' }, { word: 'Air Jordan', size: 'warm' },
+  { word: 'Anime', size: 'warm' }, { word: 'Pizza', size: 'warm' }, { word: 'Bali trip', size: 'warm' },
+  { word: 'Laptop deals', size: 'cool' }, { word: 'Denim jacket', size: 'cool' }, { word: 'Organic veggies', size: 'cool' },
+  { word: 'Smartwatch', size: 'cool' }, { word: 'Colplay tickets', size: 'cool' }, { word: 'Margherita pizza', size: 'cool' },
+  { word: 'Summer dress', size: 'cool' }, { word: 'AirPods', size: 'warm' }, { word: 'Dune 2', size: 'cool' },
+];
+
+const ZERO_SEARCHES = ['Flying car rental', 'Hover shoes', 'Time machine', 'Unicorn plushie XL', 'Mars holiday package'];
+
+// ======= RENDER =======
+function setDateRange(range, btn) {
+  document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderStats(range);
+}
+
+function renderStats(range = 'today') {
+  const d = DATA[range];
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon"><i data-lucide="dollar-sign"></i></div>
+      <div class="stat-val">${d.revenue}</div>
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-change up">↑ ${d.revChange} vs prev</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i data-lucide="package"></i></div>
+      <div class="stat-val">${d.orders}</div>
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-change up">↑ ${d.ordChange} vs prev</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i data-lucide="users"></i></div>
+      <div class="stat-val">${d.users}</div>
+      <div class="stat-label">New Users</div>
+      <div class="stat-change up">↑ ${d.usrChange} vs prev</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i data-lucide="bar-chart-2"></i></div>
+      <div class="stat-val">${d.sessions}</div>
+      <div class="stat-label">Sessions</div>
+      <div class="stat-change up">↑ ${d.sesChange} vs prev</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i data-lucide="target"></i></div>
+      <div class="stat-val">${d.convRate}</div>
+      <div class="stat-label">Conversion Rate</div>
+      <div class="stat-change up">↑ 0.4% vs prev</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i data-lucide="shopping-cart"></i></div>
+      <div class="stat-val">${d.avgOrder}</div>
+      <div class="stat-label">Avg. Order Value</div>
+      <div class="stat-change up">↑ 6.2% vs prev</div>
+    </div>
+  `;
+}
+
+function renderLineChart() {
+  const points = [35, 52, 41, 78, 62, 88, 94, 72, 86, 98, 84, 100];
+  const labels = ['Feb 6','Feb 7','Feb 8','Feb 9','Feb 10','Feb 11','Feb 12','Feb 13','Feb 14','Feb 15','Feb 16','Feb 17'];
+  const w = 500, h = 100, pad = 10;
+  const maxVal = Math.max(...points);
+  const coords = points.map((v, i) => ({ x: pad + (i / (points.length-1)) * (w - 2*pad), y: h - pad - (v/maxVal)*(h-2*pad) }));
+
+  const polyline = coords.map(c => `${c.x},${c.y}`).join(' ');
+  const areaPath = `M ${coords[0].x},${h} ${coords.map(c => `L ${c.x},${c.y}`).join(' ')} L ${coords[coords.length-1].x},${h} Z`;
+
+  document.getElementById('revenueChart').innerHTML = `
+    <defs>
+      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FF9500" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#FF9500" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${areaPath}" fill="url(#areaGrad)"/>
+    <polyline points="${polyline}" fill="none" stroke="#FF9500" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${coords.map((c, i) => `<circle cx="${c.x}" cy="${c.y}" r="3" fill="#FF9500"/>`).join('')}
+  `;
+  document.getElementById('chartLabels').innerHTML = labels.filter((_,i) => i % 3 === 0).map(l => `<span>${l}</span>`).join('');
+}
+
+function renderDonut() {
+  const cats = [
+    { name: 'Electronics', pct: 35, color: 'var(--accent)' },
+    { name: 'Streaming', pct: 25, color: '#6c00ff' },
+    { name: 'Clothes', pct: 18, color: 'var(--success)' },
+    { name: 'Booking', pct: 12, color: 'var(--accent2)' },
+    { name: 'Food & Groceries', pct: 10, color: 'var(--danger)' },
+  ];
+  document.getElementById('donutLegend').innerHTML = cats.map(c => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${c.color}"></div>
+      <span>${c.name}</span>
+      <span>${c.pct}%</span>
+    </div>`).join('');
+}
+
+function renderPageViews() {
+  const max = PAGE_VIEWS[0].views;
+  document.getElementById('pageViewsList').innerHTML = PAGE_VIEWS.map(p => `
+    <div class="progress-item">
+      <div class="progress-header">
+        <span class="progress-name">${p.page}</span>
+        <span class="progress-val">${p.views.toLocaleString()} <span style="color:var(--success);font-size:11px;">${p.change}</span></span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-bar" style="width:${(p.views/max*100).toFixed(0)}%"></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderSearches() {
+  document.getElementById('searchTableBody').innerHTML = SEARCHES.map((s, i) => {
+    const rankClass = i === 0 ? '' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const isUp = s.trend.includes('↑');
+    return `<tr>
+      <td><span class="search-rank ${rankClass}">${i+1}</span></td>
+      <td><strong>${s.term}</strong></td>
+      <td>${s.count.toLocaleString()}</td>
+      <td style="color:${isUp ? 'var(--success)' : 'var(--danger)'};font-weight:700;">${s.trend}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderOrders() {
+  document.getElementById('ordersTableBody').innerHTML = ORDERS.map(o => `
+    <tr>
+      <td style="font-family:'Space Mono',monospace;font-size:12px;color:#0066c0;">${o.id}</td>
+      <td>${o.customer}</td>
+      <td><strong>${o.amount}</strong></td>
+      <td><span class="status-pill ${o.status}">${{active:'Shipped',pending:'Processing',info:'Delivered',error:'Returned'}[o.status]}</span></td>
+      <td style="color:var(--gray-500);font-size:12px;">${o.time}</td>
+    </tr>`).join('');
+}
+
+function renderFunnel() {
+  document.getElementById('funnelChart').innerHTML = FUNNEL.map(f => `
+    <div class="funnel-step">
+      <div style="width:130px;font-size:12px;font-weight:600;color:var(--gray-500);">${f.label}</div>
+      <div class="funnel-bar-wrap">
+        <div class="funnel-bar" style="width:${f.pct}%;background:${f.color};min-width:60px;">
+          ${f.count.toLocaleString()}
+        </div>
+      </div>
+      <div style="width:40px;text-align:right;font-size:12px;color:var(--gray-500);">${f.pct}%</div>
+    </div>`).join('');
+}
+
+function renderGeo() {
+  document.getElementById('geoList').innerHTML = GEO.map(g => `
+    <div class="geo-item">
+      <span class="geo-flag">${g.flag}</span>
+      <div class="geo-bar-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:13px;">
+          <strong>${g.country}</strong>
+          <span style="color:var(--gray-500);">${g.sessions}</span>
+        </div>
+        <div class="geo-bar-track"><div class="geo-bar-fill" style="width:${g.pct}%"></div></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderDevices() {
+  const devs = [
+    { name: 'Mobile', pct: 64, color: 'var(--accent)' },
+    { name: 'Desktop', pct: 28, color: '#6c00ff' },
+    { name: 'Tablet', pct: 8, color: 'var(--accent2)' },
+  ];
+  document.getElementById('deviceBar').innerHTML = devs.map(d =>
+    `<div class="device-seg" style="width:${d.pct}%;background:${d.color}"></div>`).join('');
+  document.getElementById('deviceLegend').innerHTML = devs.map(d => `
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:8px;">
+      <div style="width:10px;height:10px;border-radius:50%;background:${d.color}"></div>
+      <span>${d.name}</span>
+      <strong style="margin-left:auto;">${d.pct}%</strong>
+    </div>`).join('');
+}
+
+function renderActivity() {
+  document.getElementById('activityFeed').innerHTML = ACTIVITY.map(a => `
+    <div class="activity-item">
+      <div class="activity-dot ${a.type}"></div>
+      <div class="activity-text">${a.msg}</div>
+      <span class="activity-time">${a.time}</span>
+    </div>`).join('');
+}
+
+function renderUsers() {
+  document.getElementById('usersTableBody').innerHTML = USERS.map(u => `
+    <tr>
+      <td><strong>${u.name}</strong></td>
+      <td style="color:var(--gray-500);font-size:12px;">${u.email}</td>
+      <td><span class="status-pill ${u.plan === 'Prime' ? 'info' : u.plan === 'Business' ? 'active' : 'pending'}">${u.plan}</span></td>
+      <td style="font-size:12px;color:var(--gray-500);">${u.joined}</td>
+      <td><span class="status-pill ${u.status}">${u.status === 'active' ? 'Active' : 'Pending'}</span></td>
+    </tr>`).join('');
+}
+
+function renderHeatmap() {
+  document.getElementById('searchHeatmap').innerHTML = HEATMAP.map(h =>
+    `<span class="search-tag ${h.size}">${h.word}</span>`).join('');
+
+  document.getElementById('zeroSearches').innerHTML = ZERO_SEARCHES.map(z => `
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;padding:7px 0;border-bottom:1px solid #f0f0f0;">
+      <span style="color:var(--danger);">❌</span>
+      <span>${z}</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--gray-500);">0 results</span>
+    </div>`).join('');
+}
+
+function renderAll() {
+  renderStats();
+  renderLineChart();
+  renderDonut();
+  renderPageViews();
+  renderSearches();
+  renderOrders();
+  renderFunnel();
+  renderGeo();
+  renderDevices();
+  renderActivity();
+  renderUsers();
+  renderHeatmap();
+}
+
+function refreshData() {
+  showToast('🔄 Data refreshed!');
+  document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+}
+
+function showToast(msg) {
+  let el = document.getElementById('toast');
+  if (!el) { el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; document.body.appendChild(el); }
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+  renderAll();
+  if (window.lucide) { lucide.createIcons(); }
+});
+</script>
+</body>
+</html>

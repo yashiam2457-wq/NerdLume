@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NerdLume — Adaptive Quiz Arena</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="NerdLume_Symbol.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="design-system.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg: #090a10;
+      --surface: #0f121d;
+      --surface2: #151928;
+      --surface3: #1e2438;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(34, 197, 94, 0.3);
+      --accent: #22c55e;
+      --accent-glow: rgba(34, 197, 94, 0.2);
+      --accent2: #6366f1;
+      --accent3: #ef4444;
+      --purple: #a855f7;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --card: #111522;
+      --font-main: 'Plus Jakarta Sans', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-heading: 'Space Grotesk', 'Syne', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 40% at 15% 20%, rgba(184, 255, 87, 0.04) 0%, transparent 60%), radial-gradient(ellipse 50% 50% at 85% 80%, rgba(87, 200, 255, 0.04) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      opacity: .025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0
+    }
+
+    /* ── Header ── */
+    .qz-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 12, 16, 0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 16px
+    }
+
+    .qz-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      color: var(--text)
+    }
+
+    .qz-logo span {
+      color: var(--accent)
+    }
+
+    .qz-mode-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: rgba(184, 255, 87, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(184, 255, 87, 0.25);
+      padding: 3px 10px;
+      border-radius: 20px
+    }
+
+    .qz-topic {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .qz-score-chip {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border)
+    }
+
+    .qz-score-chip span {
+      color: var(--accent)
+    }
+
+    .qz-exit-btn {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all .2s
+    }
+
+    .qz-exit-btn:hover {
+      color: var(--accent3);
+      border-color: rgba(239, 68, 68, .4)
+    }
+
+    /* ── Progress Bar ── */
+    .qz-progress-wrap {
+      position: sticky;
+      top: 56px;
+      z-index: 99;
+      background: rgba(11, 12, 16, 0.95);
+      padding: 10px 24px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .qz-progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 7px
+    }
+
+    .qz-prog-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted)
+    }
+
+    .qz-prog-frac {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .qz-prog-bar-track {
+      height: 5px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden
+    }
+
+    .qz-prog-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 3px;
+      transition: width .5s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    /* ── Layout ── */
+    .qz-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 120px);
+      position: relative;
+      z-index: 1
+    }
+
+    /* ── Question List Sidebar ── */
+    .qz-sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      overflow-y: auto;
+      max-height: calc(100vh - 120px);
+      position: sticky;
+      top: 120px;
+      height: fit-content
+    }
+
+    .qz-sidebar-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      color: var(--muted);
+      text-transform: uppercase
+    }
+
+    .qz-qlist {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px
+    }
+
+    .qz-qnum {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+      font-weight: 700
+    }
+
+    .qz-qnum:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .qz-qnum.current {
+      border-color: var(--accent);
+      background: rgba(34, 197, 94, .15);
+      color: var(--accent);
+      box-shadow: 0 0 12px rgba(34, 197, 94, .2)
+    }
+
+    .qz-qnum.answered {
+      border-color: rgba(34, 197, 94, .4);
+      background: rgba(34, 197, 94, .08);
+      color: var(--accent)
+    }
+
+    .qz-qnum.skipped {
+      border-color: rgba(239, 68, 68, .3);
+      background: rgba(239, 68, 68, .04);
+      color: var(--accent3)
+    }
+
+    .qz-qnum.correct {
+      border-color: rgba(34, 197, 94, .6);
+      background: rgba(34, 197, 94, .12);
+      color: var(--accent)
+    }
+
+    .qz-qnum.wrong {
+      border-color: rgba(239, 68, 68, .6);
+      background: rgba(239, 68, 68, .12);
+      color: var(--accent3)
+    }
+
+    .qz-sidebar-legend {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    .qz-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--muted)
+    }
+
+    .qz-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0
+    }
+
+    .ld-curr {
+      background: rgba(184, 255, 87, .3);
+      border: 1px solid var(--accent)
+    }
+
+    .ld-ans {
+      background: rgba(184, 255, 87, .1);
+      border: 1px solid rgba(184, 255, 87, .4)
+    }
+
+    .ld-skip {
+      background: rgba(255, 107, 87, .08);
+      border: 1px solid rgba(255, 107, 87, .3)
+    }
+
+    .ld-unans {
+      background: var(--surface2);
+      border: 1px solid var(--border)
+    }
+
+    /* ── Main Content ── */
+    .qz-main {
+      padding: 32px 40px;
+      max-width: 860px
+    }
+
+    .qz-question-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 20px;
+      animation: fadeIn .3s ease both
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .qz-q-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap
+    }
+
+    .qz-q-num-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 700;
+      background: rgba(184, 255, 87, .1);
+      color: var(--accent);
+      border: 1px solid rgba(184, 255, 87, .25);
+      padding: 3px 10px;
+      border-radius: 6px
+    }
+
+    .qz-q-type-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid
+    }
+
+    .qz-qt-mcq {
+      background: rgba(87, 200, 255, .07);
+      color: var(--accent2);
+      border-color: rgba(87, 200, 255, .25)
+    }
+
+    .qz-qt-msq {
+      background: rgba(192, 132, 252, .07);
+      color: #c084fc;
+      border-color: rgba(192, 132, 252, .25)
+    }
+
+    .qz-qt-text {
+      background: rgba(255, 107, 87, .07);
+      color: var(--accent3);
+      border-color: rgba(255, 107, 87, .25)
+    }
+
+    .qz-q-diff {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted)
+    }
+
+    .qz-question-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.55;
+      color: var(--text);
+      margin-bottom: 22px
+    }
+
+    /* MCQ Options */
+    .qz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px
+    }
+
+    .qz-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all .2s;
+      user-select: none
+    }
+
+    .qz-option:hover {
+      border-color: rgba(34, 197, 94, .4);
+      background: rgba(34, 197, 94, .04)
+    }
+
+    .qz-option.selected {
+      border-color: var(--accent);
+      background: rgba(34, 197, 94, .08);
+      box-shadow: 0 0 16px rgba(34, 197, 94, .15)
+    }
+
+    .qz-option.selected .qz-opt-letter {
+      background: var(--accent);
+      color: #090a10;
+      border-color: var(--accent)
+    }
+
+    .qz-option.correct {
+      border-color: rgba(34, 197, 94, .7);
+      background: rgba(34, 197, 94, .08)
+    }
+
+    .qz-option.wrong {
+      border-color: rgba(239, 68, 68, .7);
+      background: rgba(239, 68, 68, .08)
+    }
+
+    .qz-option.correct .qz-opt-letter {
+      background: var(--accent);
+      color: #0b0c10;
+      border-color: var(--accent)
+    }
+
+    .qz-option.wrong .qz-opt-letter {
+      background: var(--accent3);
+      color: white;
+      border-color: var(--accent3)
+    }
+
+    /* MSQ */
+    .qz-option.msq-selected {
+      border-color: var(--purple);
+      background: rgba(192, 132, 252, .06)
+    }
+
+    .qz-option.msq-selected .qz-opt-letter {
+      background: var(--purple);
+      color: #0b0c10;
+      border-color: var(--purple)
+    }
+
+    .qz-opt-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: all .2s
+    }
+
+    .qz-opt-text {
+      font-size: 0.88rem;
+      line-height: 1.5;
+      padding-top: 3px
+    }
+
+    /* MSQ note */
+    .qz-msq-note {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--purple);
+      margin-bottom: 12px;
+      padding: 6px 10px;
+      background: rgba(192, 132, 252, .06);
+      border-radius: 6px;
+      border: 1px solid rgba(192, 132, 252, .15)
+    }
+
+    /* Text input */
+    .qz-text-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      resize: vertical;
+      min-height: 100px;
+      outline: none;
+      transition: border-color .2s
+    }
+
+    .qz-text-input:focus {
+      border-color: rgba(34, 197, 94, .6);
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, .12)
+    }
+
+    .qz-text-hint {
+      font-size: 0.73rem;
+      color: var(--muted);
+      margin-top: 8px;
+      font-family: 'Space Mono', monospace
+    }
+
+    /* Feedback box */
+    .qz-feedback {
+      display: none;
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-top: 16px;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      animation: fadeIn .2s ease
+    }
+
+    .qz-feedback.correct {
+      background: rgba(34, 197, 94, .08);
+      border: 1px solid rgba(34, 197, 94, .3);
+      color: var(--accent)
+    }
+
+    .qz-feedback.wrong {
+      background: rgba(239, 68, 68, .08);
+      border: 1px solid rgba(239, 68, 68, .3);
+      color: var(--accent3)
+    }
+
+    .qz-feedback.visible {
+      display: block
+    }
+
+    .qz-fb-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      margin-bottom: 6px
+    }
+
+    .qz-fb-exp {
+      color: var(--text);
+      font-size: 0.82rem
+    }
+
+    /* Action bar */
+    .qz-action-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap
+    }
+
+    .qz-btn {
+      padding: 11px 24px;
+      border-radius: 11px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all .2s;
+      white-space: nowrap
+    }
+
+    .qz-btn-submit {
+      background: var(--accent);
+      color: #0b0c10
+    }
+
+    .qz-btn-submit:hover {
+      box-shadow: 0 6px 20px rgba(184, 255, 87, .3);
+      transform: translateY(-1px)
+    }
+
+    .qz-btn-submit:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none
+    }
+
+    .qz-btn-next {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1.5px solid var(--border)
+    }
+
+    .qz-btn-next:hover {
+      border-color: rgba(184, 255, 87, .3);
+      color: var(--accent)
+    }
+
+    .qz-btn-skip {
+      background: none;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      font-size: 0.78rem
+    }
+
+    .qz-btn-skip:hover {
+      border-color: rgba(255, 107, 87, .3);
+      color: var(--accent3)
+    }
+
+    .qz-btn-finish {
+      background: var(--accent2);
+      color: #0b0c10
+    }
+
+    .qz-btn-finish:hover {
+      box-shadow: 0 6px 20px rgba(87, 200, 255, .3);
+      transform: translateY(-1px)
+    }
+
+    /* ── Results Screen ── */
+    .qz-results {
+      display: none;
+      padding: 40px;
+      max-width: 760px;
+      margin: 0 auto;
+      animation: fadeIn .4s ease both
+    }
+
+    .qz-results.visible {
+      display: block
+    }
+
+    .qz-res-header {
+      text-align: center;
+      margin-bottom: 36px
+    }
+
+    .qz-res-emoji {
+      font-size: 3rem;
+      margin-bottom: 12px
+    }
+
+    .qz-res-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 8px
+    }
+
+    .qz-res-subtitle {
+      font-size: .85rem;
+      color: var(--muted)
+    }
+
+    .qz-res-score-ring {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 5px solid var(--border);
+      background: var(--card);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 24px auto;
+      position: relative;
+      overflow: hidden
+    }
+
+    .qz-res-score-ring::before {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent) var(--pct), var(--border) 0);
+      z-index: -1
+    }
+
+    .qz-res-pct {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent)
+    }
+
+    .qz-res-pct-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted)
+    }
+
+    .qz-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px
+    }
+
+    .qz-stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center
+    }
+
+    .qz-stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 4px
+    }
+
+    .qz-stat-lbl {
+      font-family: 'Space Mono', monospace;
+      font-size: .6rem;
+      color: var(--muted);
+      letter-spacing: .5px
+    }
+
+    .qz-res-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: .82rem;
+      opacity: 0;
+      transition: all .3s;
+      z-index: 999;
+      white-space: nowrap;
+      pointer-events: none
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0)
+    }
+
+    .toast-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0
+    }
+
+    @media(max-width:768px) {
+      .qz-layout {
+        grid-template-columns: 1fr
+      }
+
+      .qz-sidebar {
+        position: static;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border)
+      }
+
+      .qz-main {
+        padding: 20px 16px
+      }
+
+      .qz-qlist {
+        grid-template-columns: repeat(8, 1fr)
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Avara Ambient Dynamic Animated Background -->
+  <div class="avara-bg-glow">
+    <div class="avara-orb avara-orb-1"></div>
+    <div class="avara-orb avara-orb-2"></div>
+    <div class="avara-orb avara-orb-3"></div>
+  </div>
+  <div class="noise"></div>
+
+  <!-- Header -->
+  <header class="qz-header">
+    <a href="index.html" class="qz-logo">Nerd<span>Lume</span></a>
+    <div class="qz-mode-tag" id="mode-tag">QUIZ</div>
+    <div class="qz-topic" id="header-topic">Loading...</div>
+    <div class="qz-score-chip">Score: <span id="live-score">0</span> / <span id="live-total">0</span></div>
+    <button class="qz-exit-btn" onclick="confirmExit()"><i data-lucide="x" style="width:14px;height:14px;vertical-align:middle;margin-right:2px;"></i> Exit</button>
+  </header>
+
+  <!-- Progress Bar -->
+  <div class="qz-progress-wrap">
+    <div class="qz-progress-info">
+      <span class="qz-prog-label">PROGRESS</span>
+      <span class="qz-prog-frac"><span id="prog-cur">1</span> / <span id="prog-tot">10</span></span>
+    </div>
+    <div class="qz-prog-bar-track">
+      <div class="qz-prog-bar-fill" id="prog-bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="qz-layout">
+
+    <!-- Sidebar -->
+    <aside class="qz-sidebar" id="qz-sidebar">
+      <div class="qz-sidebar-title">Questions</div>
+      <div class="qz-qlist" id="qz-qlist"></div>
+      <div class="qz-sidebar-legend">
+        <div class="qz-legend-item">
+          <div class="qz-legend-dot ld-curr"></div>Current
+        </div>
+        <div class="qz-legend-item">
+          <div class="qz-legend-dot ld-ans"></div>Answered
+        </div>
+        <div class="qz-legend-item">
+          <div class="qz-legend-dot ld-skip"></div>Skipped
+        </div>
+        <div class="qz-legend-item">
+          <div class="qz-legend-dot ld-unans"></div>Unanswered
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="qz-main" id="qz-main">
+      <div id="qz-question-area"></div>
+      <div id="qz-results-area" class="qz-results"></div>
+    </main>
+
+  </div>
+
+  <div id="toast">
+    <div class="toast-dot"></div><span id="toast-msg"></span>
+  </div>
+
+  <script>
+    // ── Parse URL params ──────────────────────────────────────
+    const params = new URLSearchParams(location.search);
+    const MODE = params.get('mode') || 'quiz';
+    const TOPIC = decodeURIComponent(params.get('topic') || 'General Topic');
+    function getUserPlan() {
+      try {
+        const s = localStorage.getItem('nb_session');
+        return s ? (JSON.parse(s).plan || 'free') : 'guest';
+      } catch (e) {
+        return 'guest';
+      }
+    }
+    const userPlan = getUserPlan();
+    const hasAccess = userPlan === 'free-premium' || userPlan === 'diamond';
+    const parsedCount = parseInt(params.get('count') || '10');
+    const COUNT = (!hasAccess && parsedCount > 5) ? 5 : parsedCount;
+    const DIFF = params.get('diff') || 'medium';
+    const SYL = decodeURIComponent(params.get('syl') || 'Full Syllabus');
+
+    // ── State ─────────────────────────────────────────────────
+    let currentQ = 0;
+    let answers = {};   // {qIndex: value}
+    let status = {};   // {qIndex: 'answered'|'skipped'|'correct'|'wrong'}
+    let score = 0;
+    let submitted = false;
+
+    // ── Question Bank Generator ───────────────────────────────
+    // Generates a realistic mix of MCQ, MSQ, Text questions
+    function buildQuestions(topic, count, diff, syl) {
+      const types = ['mcq', 'mcq', 'mcq', 'msq', 'text'];  // weighted
+      const diffs = diff === 'mixed'
+        ? ['Easy', 'Easy', 'Medium', 'Medium', 'Hard']
+        : [diff.charAt(0).toUpperCase() + diff.slice(1)];
+
+      const sylTag = SYL.replace(/\+/g, ' ');
+
+      const rawBank = [
+        // MCQ questions
+        {
+          type: 'mcq', q: `Which of the following best defines the core principle of ${topic}?`,
+          opts: ['A fundamental mechanism governing all related phenomena', 'An abstract concept with no practical applications', 'A temporary workaround for complex problems', 'A technique exclusive to advanced research'],
+          ans: 0, exp: `The core principle of ${topic} serves as the foundational mechanism that governs all related phenomena and applications.`
+        },
+        {
+          type: 'mcq', q: `What is the primary purpose of applying ${topic} in real-world scenarios?`,
+          opts: ['To complicate existing systems unnecessarily', 'To solve problems efficiently using structured approaches', 'To delay solutions until more data is available', 'To replace all existing methodologies immediately'],
+          ans: 1, exp: `${topic} is primarily used to solve real-world problems through structured, efficient approaches.`
+        },
+        {
+          type: 'mcq', q: `In the context of ${topic}, which component plays the most critical role?`,
+          opts: ['The input validation layer', 'The core processing mechanism', 'The output formatting module', 'The error logging system'],
+          ans: 1, exp: `The core processing mechanism is the most critical component as it defines how data is transformed.`
+        },
+        {
+          type: 'mcq', q: `Which statement about ${topic} is TRUE based on ${sylTag}?`,
+          opts: ['It applies only in theoretical contexts', 'It was developed after all competing approaches failed', 'It provides a structured framework applicable across domains', 'It requires specialized hardware to implement'],
+          ans: 2, exp: `${topic} provides a structured, domain-agnostic framework making it widely applicable.`
+        },
+        {
+          type: 'mcq', q: `What happens when the constraints of ${topic} are violated?`,
+          opts: ['Performance improves significantly', 'System behavior becomes unpredictable or fails', 'Minor cosmetic issues appear', 'Nothing — constraints are optional guidelines'],
+          ans: 1, exp: `Violating constraints leads to unpredictable system behavior — constraints define required conditions for correct operation.`
+        },
+        {
+          type: 'mcq', q: `According to ${sylTag} content, ${topic} was first applied to which domain?`,
+          opts: ['Medical diagnostics', 'Engineering systems design', 'Financial modeling', 'Theoretical mathematics'],
+          ans: 1, exp: `The foundational application was in engineering systems, from which it spread to other domains.`
+        },
+        {
+          type: 'mcq', q: `Which time complexity best describes the optimal implementation of ${topic}?`,
+          opts: ['O(n²)', 'O(n log n)', 'O(1)', 'O(2ⁿ)'],
+          ans: 1, exp: `The optimal implementation achieves O(n log n) complexity through divide-and-conquer decomposition.`
+        },
+        {
+          type: 'mcq', q: `A PYQ from this topic: "What is the output when the algorithm processes an empty input?"`,
+          opts: ['Throws a runtime exception', 'Returns a null value', 'Returns an empty result set', 'Enters an infinite loop'],
+          ans: 2, exp: `By convention, processing an empty input returns an empty result set — no exception should be thrown for valid empty inputs.`
+        },
+        {
+          type: 'mcq', q: `Which approach should be used to debug failures in ${topic} implementations?`,
+          opts: ['Restart the system immediately', 'Isolate components using unit testing', 'Ignore the error if it occurs rarely', 'Rewrite the entire implementation'],
+          ans: 1, exp: `Unit testing allows systematic isolation of failing components, making debugging efficient and precise.`
+        },
+        {
+          type: 'mcq', q: `In a case study involving ${topic}, which factor was identified as most impactful?`,
+          opts: ['Hardware speed', 'Quality of input data', 'Programming language choice', 'Team size'],
+          ans: 1, exp: `Data quality consistently emerges as the most impactful factor in real-world applications.`
+        },
+
+        // MSQ questions
+        {
+          type: 'msq', q: `Select ALL that are valid applications of ${topic}: (Multiple correct answers)`,
+          opts: ['Database optimization', 'Signal processing', 'Game AI pathfinding', 'Social media design', 'Network routing'],
+          ans: [0, 1, 2, 4], exp: `${topic} applies to database optimization, signal processing, AI pathfinding, and network routing. Social media UI design typically uses different paradigms.`
+        },
+        {
+          type: 'msq', q: `Which of the following are characteristics of an efficient ${topic} implementation? (Select all that apply)`,
+          opts: ['Minimal memory footprint', 'Correct output for all valid inputs', 'Handles edge cases gracefully', 'Requires internet connectivity', 'Produces deterministic results'],
+          ans: [0, 1, 2, 4], exp: `Efficiency characteristics include low memory use, correctness, edge-case handling, and determinism. Internet connectivity is not a characteristic of the algorithm itself.`
+        },
+        {
+          type: 'msq', q: `According to ${sylTag}, which steps are mandatory in the ${topic} process? (Select all)`,
+          opts: ['Input validation', 'Core transformation', 'Output formatting', 'GUI rendering', 'Error handling'],
+          ans: [0, 1, 2, 4], exp: `Input validation, transformation, output formatting, and error handling are all mandatory. GUI rendering is presentation-layer concern, not part of the core process.`
+        },
+        {
+          type: 'msq', q: `Which of these represent common pitfalls when implementing ${topic}? (Multiple answers)`,
+          opts: ['Off-by-one errors', 'Ignoring edge cases', 'Using descriptive variable names', 'Skipping input validation', 'Over-engineering the solution'],
+          ans: [0, 1, 3, 4], exp: `Common pitfalls include off-by-one errors, ignoring edge cases, skipping input validation, and over-engineering. Descriptive names are good practice, not a pitfall.`
+        },
+        {
+          type: 'msq', q: `From PYQ records, which of the following are valid failure modes for ${topic}? (Select all)`,
+          opts: ['Null input not handled', 'Integer overflow', 'Incorrect base case', 'Excessive recursion depth', 'Proper termination condition'],
+          ans: [0, 1, 2, 3], exp: `Null input, overflow, incorrect base case, and excessive recursion are documented failure modes. Proper termination is a solution, not a failure mode.`
+        },
+
+        // Text questions
+        {
+          type: 'text', q: `Explain the fundamental difference between ${topic} and a brute-force approach. What advantage does ${topic} provide?`,
+          exp: `${topic} provides a structured, efficient approach compared to brute force. While brute force exhaustively tries all possibilities, ${topic} uses a principled strategy to reduce the search space, achieving better time and space complexity. The key advantage is predictable, often polynomial-time performance versus exponential brute force.`
+        },
+        {
+          type: 'text', q: `Write the pseudocode for the core algorithm of ${topic} and explain each step briefly.`,
+          exp: `Pseudocode:\n1. Validate input (handle null/empty cases)\n2. Initialize data structures\n3. Apply core transformation logic\n4. Handle edge cases during processing\n5. Compile and return result\nEach step ensures correctness, efficiency, and robustness of the implementation.`
+        },
+        {
+          type: 'text', q: `A student claims "${topic} is only useful for small datasets." Critically evaluate this statement.`,
+          exp: `This claim is incorrect. ${topic} scales well due to its O(n log n) complexity, making it viable for large datasets. Real-world applications in databases, networking, and AI all operate on massive datasets. The claim may stem from confusing the algorithm itself with a specific (perhaps naive) implementation.`
+        },
+        {
+          type: 'text', q: `Case Study: In a production system, ${topic} is causing timeouts on 5% of requests. List 3 possible causes and their solutions.`,
+          exp: `1. Input size exceeding expected range → Implement input validation and pagination\n2. Missing index on lookup operation → Analyze query plan and add appropriate indexes\n3. Memory pressure causing GC pauses → Profile memory usage and optimize data structures or increase heap size`
+        },
+        {
+          type: 'text', q: `Define the time and space complexity of the optimal ${topic} implementation and justify your answer.`,
+          exp: `Time: O(n log n) — achieved through divide-and-conquer decomposition, each level takes O(n) work across O(log n) levels. Space: O(n) — requires auxiliary storage proportional to input for merge operations. This is theoretically optimal for comparison-based approaches (proven lower bound).`
+        },
+      ];
+
+      // Build set of `count` questions
+      const shuffled = [...rawBank].sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+
+      // Pad if needed
+      while (selected.length < count) {
+        const idx = selected.length % rawBank.length;
+        selected.push({ ...rawBank[idx], q: rawBank[idx].q + ' [Variant ' + selected.length + ']' });
+      }
+
+      return selected.slice(0, count).map((q, i) => ({
+        ...q,
+        index: i,
+        difficulty: diffs[i % diffs.length],
+      }));
+    }
+
+    // ── Init ──────────────────────────────────────────────────
+    const QUESTIONS = buildQuestions(TOPIC, COUNT, DIFF, SYL);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('header-topic').textContent = TOPIC + ' · ' + SYL.replace(/\+/g, ' ');
+      document.getElementById('live-total').textContent = COUNT;
+      document.getElementById('prog-tot').textContent = COUNT;
+      buildSidebar();
+      renderQuestion(0);
+      if (!hasAccess && parsedCount > 5) {
+        setTimeout(() => {
+          showToast('Free tier includes 5 questions • Upgrade to Scholar Pro for 10 or 15 questions.');
+        }, 1200);
+      }
+    });
+
+    // ── Sidebar ───────────────────────────────────────────────
+    function buildSidebar() {
+      const list = document.getElementById('qz-qlist');
+      list.innerHTML = '';
+      QUESTIONS.forEach((q, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'qz-qnum' + (i === currentQ ? ' current' : '');
+        btn.textContent = i + 1;
+        btn.id = 'qnum-' + i;
+        btn.title = 'Q' + (i + 1) + ': ' + q.type.toUpperCase();
+        btn.onclick = () => goToQuestion(i);
+        list.appendChild(btn);
+      });
+    }
+
+    function updateSidebar() {
+      QUESTIONS.forEach((q, i) => {
+        const btn = document.getElementById('qnum-' + i);
+        if (!btn) return;
+        btn.className = 'qz-qnum';
+        if (i === currentQ) btn.classList.add('current');
+        else if (status[i] === 'correct') btn.classList.add('correct');
+        else if (status[i] === 'wrong') btn.classList.add('wrong');
+        else if (status[i] === 'answered') btn.classList.add('answered');
+        else if (status[i] === 'skipped') btn.classList.add('skipped');
+      });
+    }
+
+    function goToQuestion(i) {
+      if (submitted) return;
+      currentQ = i;
+      renderQuestion(i);
+      updateSidebar();
+      document.getElementById('qz-question-area').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ── Render Question ───────────────────────────────────────
+    function renderQuestion(index) {
+      const q = QUESTIONS[index];
+      const area = document.getElementById('qz-question-area');
+      const isLast = index === QUESTIONS.length - 1;
+
+      // Progress
+      const pct = Math.round((Object.keys(answers).length / QUESTIONS.length) * 100);
+      document.getElementById('prog-bar').style.width = pct + '%';
+      document.getElementById('prog-cur').textContent = index + 1;
+
+      const typeLabel = { mcq: 'Single Choice (MCQ)', msq: 'Multiple Choice (MSQ)', text: 'Short Answer' }[q.type];
+      const typeCls = { mcq: 'qz-qt-mcq', msq: 'qz-qt-msq', text: 'qz-qt-text' }[q.type];
+
+      let bodyHTML = '';
+
+      if (q.type === 'mcq') {
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+        bodyHTML = `<div class="qz-options" id="mcq-opts">
+      ${q.opts.map((o, i) => `
+        <div class="qz-option ${answers[index] === i ? 'selected' : ''}" onclick="selectMCQ(${index},${i})" id="opt-${i}">
+          <div class="qz-opt-letter">${letters[i]}</div>
+          <div class="qz-opt-text">${o}</div>
+        </div>`).join('')}
+    </div>`;
+      }
+
+      if (q.type === 'msq') {
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+        const curSel = answers[index] || [];
+        bodyHTML = `
+      <div class="qz-msq-note">☑ Select all correct options — multiple answers may be correct</div>
+      <div class="qz-options" id="msq-opts">
+        ${q.opts.map((o, i) => `
+          <div class="qz-option ${curSel.includes(i) ? 'msq-selected' : ''}" onclick="selectMSQ(${index},${i})" id="opt-${i}">
+            <div class="qz-opt-letter">${letters[i]}</div>
+            <div class="qz-opt-text">${o}</div>
+          </div>`).join('')}
+      </div>`;
+      }
+
+      if (q.type === 'text') {
+        const curAns = answers[index] || '';
+        bodyHTML = `
+      <textarea class="qz-text-input" id="text-ans" placeholder="Type your answer here..." oninput="saveTextAns(${index},this.value)">${curAns}</textarea>
+      <div class="qz-text-hint">Tip: Be concise but complete. Partial credit is awarded in review.</div>`;
+      }
+
+      // Feedback
+      const hasFeedback = status[index] === 'correct' || status[index] === 'wrong';
+      const fbClass = hasFeedback ? (status[index] === 'correct' ? 'correct' : 'wrong') : '';
+      const fbTitle = hasFeedback ? (status[index] === 'correct' ? '✓ Correct!' : '✗ Incorrect') : '';
+      const fbVis = hasFeedback ? 'visible' : '';
+
+      area.innerHTML = `
+    <div class="qz-question-card">
+      <div class="qz-q-meta">
+        <span class="qz-q-num-badge">Q ${index + 1} / ${QUESTIONS.length}</span>
+        <span class="qz-q-type-badge ${typeCls}">${typeLabel}</span>
+        <span class="qz-q-diff">· ${q.difficulty}</span>
+      </div>
+      <div class="qz-question-text">${q.q}</div>
+      ${bodyHTML}
+      <div class="qz-feedback ${fbClass} ${fbVis}" id="qz-feedback">
+        <div class="qz-fb-title">${fbTitle}</div>
+        <div class="qz-fb-exp">${q.exp}</div>
+      </div>
+    </div>
+
+    <div class="qz-action-bar">
+      ${!hasFeedback ? `<button class="qz-btn qz-btn-submit" id="submit-btn" onclick="submitAnswer(${index})" ${!answers[index] && q.type !== 'text' ? 'disabled' : ''}>Check Answer</button>` : ''}
+      ${!isLast
+          ? `<button class="qz-btn qz-btn-next" onclick="nextQuestion()">${hasFeedback ? 'Next Question →' : 'Next'}</button>`
+          : `<button class="qz-btn qz-btn-finish" onclick="finishQuiz()">Finish Quiz ✓</button>`}
+      ${!hasFeedback && !isLast ? `<button class="qz-btn qz-btn-skip" onclick="skipQuestion(${index})">Skip →</button>` : ''}
+    </div>
+  `;
+
+      updateSidebar();
+
+      // Restore disabled state for mcq if already answered
+      if (hasFeedback) lockOptions(q.type, q, index);
+    }
+
+    function lockOptions(type, q, index) {
+      if (type === 'mcq') {
+        document.querySelectorAll('.qz-option').forEach((el, i) => {
+          el.onclick = null;
+          if (i === q.ans) el.classList.add('correct');
+          if (answers[index] === i && i !== q.ans) el.classList.add('wrong');
+        });
+      }
+      if (type === 'msq') {
+        document.querySelectorAll('.qz-option').forEach((el, i) => {
+          el.onclick = null;
+          if (q.ans.includes(i)) el.classList.add('correct');
+        });
+      }
+      if (type === 'text') {
+        const ta = document.getElementById('text-ans');
+        if (ta) ta.disabled = true;
+      }
+    }
+
+    // ── Selection ─────────────────────────────────────────────
+    function selectMCQ(qIndex, optIndex) {
+      if (status[qIndex]) return;
+      answers[qIndex] = optIndex;
+      document.querySelectorAll('.qz-option').forEach((el, i) => {
+        el.classList.toggle('selected', i === optIndex);
+      });
+      const btn = document.getElementById('submit-btn');
+      if (btn) btn.disabled = false;
+    }
+
+    function selectMSQ(qIndex, optIndex) {
+      if (status[qIndex]) return;
+      if (!answers[qIndex]) answers[qIndex] = [];
+      const idx = answers[qIndex].indexOf(optIndex);
+      if (idx === -1) answers[qIndex].push(optIndex);
+      else answers[qIndex].splice(idx, 1);
+
+      document.querySelectorAll('.qz-option').forEach((el, i) => {
+        el.classList.toggle('msq-selected', answers[qIndex].includes(i));
+      });
+      const btn = document.getElementById('submit-btn');
+      if (btn) btn.disabled = answers[qIndex].length === 0;
+    }
+
+    function saveTextAns(qIndex, val) {
+      answers[qIndex] = val;
+      const btn = document.getElementById('submit-btn');
+      if (btn) btn.disabled = !val.trim();
+    }
+
+    // ── Submit ────────────────────────────────────────────────
+    function submitAnswer(index) {
+      const q = QUESTIONS[index];
+      let isCorrect = false;
+
+      if (q.type === 'mcq') {
+        isCorrect = answers[index] === q.ans;
+      }
+      if (q.type === 'msq') {
+        const sel = [...(answers[index] || [])].sort().toString();
+        const cor = [...q.ans].sort().toString();
+        isCorrect = sel === cor;
+      }
+      if (q.type === 'text') {
+        isCorrect = (answers[index] || '').trim().length >= 15; // partial credit simulation
+      }
+
+      status[index] = isCorrect ? 'correct' : 'wrong';
+      if (isCorrect) score++;
+
+      document.getElementById('live-score').textContent = score;
+
+      const fb = document.getElementById('qz-feedback');
+      if (fb) {
+        fb.className = 'qz-feedback ' + (isCorrect ? 'correct' : 'wrong') + ' visible';
+        fb.querySelector('.qz-fb-title').textContent = isCorrect ? '✓ Correct!' : '✗ Incorrect';
+        fb.querySelector('.qz-fb-exp').textContent = q.exp;
+      }
+
+      lockOptions(q.type, q, index);
+
+      // Replace submit + skip with next
+      const actionBar = document.querySelector('.qz-action-bar');
+      const isLast = index === QUESTIONS.length - 1;
+      const submitBtn = document.getElementById('submit-btn');
+      const skipBtn = document.querySelector('.qz-btn-skip');
+      if (submitBtn) submitBtn.remove();
+      if (skipBtn) skipBtn.remove();
+      if (!isLast && !document.querySelector('.qz-btn-next')) {
+        const nb = document.createElement('button');
+        nb.className = 'qz-btn qz-btn-next'; nb.textContent = 'Next Question →';
+        nb.onclick = nextQuestion;
+        actionBar.insertBefore(nb, actionBar.firstChild);
+      }
+
+      updateSidebar();
+      const pct = Math.round((Object.keys(answers).length / QUESTIONS.length) * 100);
+      document.getElementById('prog-bar').style.width = pct + '%';
+    }
+
+    function skipQuestion(index) {
+      status[index] = 'skipped';
+      updateSidebar();
+      nextQuestion();
+    }
+
+    function nextQuestion() {
+      if (currentQ < QUESTIONS.length - 1) {
+        currentQ++;
+        renderQuestion(currentQ);
+      }
+    }
+
+    // ── Finish ────────────────────────────────────────────────
+    function finishQuiz() {
+      submitted = true;
+      const area = document.getElementById('qz-question-area');
+      area.innerHTML = '';
+
+      const res = document.getElementById('qz-results-area');
+      res.classList.add('visible');
+
+      const total = QUESTIONS.length;
+      const correct = Object.values(status).filter(s => s === 'correct').length;
+      const wrong = Object.values(status).filter(s => s === 'wrong').length;
+      const skipped = Object.values(status).filter(s => s === 'skipped').length;
+      const pct = Math.round((correct / total) * 100);
+      const grade = pct >= 90 ? 'Excellent!' : pct >= 70 ? 'Good Job!' : pct >= 50 ? 'Keep Practicing' : 'Keep Going!';
+
+      document.getElementById('prog-bar').style.width = '100%';
+
+      res.innerHTML = `
+    <div class="qz-res-header">
+      <div class="qz-res-title">${grade}</div>
+      <div class="qz-res-subtitle">${TOPIC} · ${SYL.replace(/\+/g, ' ')} · ${DIFF}</div>
+    </div>
+    <div class="qz-res-score-ring" style="--pct:${pct * 3.6}deg">
+      <div class="qz-res-pct">${pct}%</div>
+      <div class="qz-res-pct-label">SCORE</div>
+    </div>
+    <div class="qz-stats-grid">
+      <div class="qz-stat-box"><div class="qz-stat-num" style="color:var(--accent)">${correct}</div><div class="qz-stat-lbl">CORRECT</div></div>
+      <div class="qz-stat-box"><div class="qz-stat-num" style="color:var(--accent3)">${wrong}</div><div class="qz-stat-lbl">WRONG</div></div>
+      <div class="qz-stat-box"><div class="qz-stat-num" style="color:var(--muted)">${skipped}</div><div class="qz-stat-lbl">SKIPPED</div></div>
+      <div class="qz-stat-box"><div class="qz-stat-num">${total}</div><div class="qz-stat-lbl">TOTAL</div></div>
+    </div>
+    <div class="qz-res-actions">
+      <button class="qz-btn qz-btn-submit" onclick="location.reload()">Try Again</button>
+      <button class="qz-btn qz-btn-next" onclick="location.href='index.html'">← Back to Home</button>
+    </div>`;
+
+      res.style.display = 'block';
+    }
+
+    function confirmExit() {
+      if (confirm('Exit quiz? Your progress will be lost.')) location.href = 'index.html';
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2600);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.lucide) { lucide.createIcons(); }
+    });
+  </script>
+</body>
+
+</html>

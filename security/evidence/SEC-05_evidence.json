@@ -1,0 +1,6 @@
+{
+  "test_id": "TC-A03",
+  "description": "Node server allows user signup with arbitrary plan parameter",
+  "code_pattern": "['free', 'free-premium', 'diamond'].includes(body.plan) ? body.plan : 'free'",
+  "vulnerable": true
+}

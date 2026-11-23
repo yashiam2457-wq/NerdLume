@@ -1,0 +1,14 @@
+{
+  "test_id": "TC-SEC-02",
+  "description": "Hardcoded demo passwords found in server.py",
+  "sample_matches": [
+    "{\"email\": \"yashpt.0704@gmail.com\", \"username\": \"yashpt0704\", \"password\": \"Yash@D...",
+    "{\"email\": \"demo@nerdlume.in\", \"username\": \"demo_user\", \"password\": \"Demo@1234\", ...",
+    "{\"email\": \"premium@nerdlume.in\", \"username\": \"premium_scholar\", \"password\": \"Pre...",
+    "{\"email\": \"diamond@nerdlume.in\", \"username\": \"diamond_scholar\", \"password\": \"Dia...",
+    "{\"email\": \"demo@nerdybro.in\", \"username\": \"demo_user_legacy\", \"password\": \"Demo@...",
+    "{\"email\": \"premium@nerdybro.in\", \"username\": \"premium_bro\", \"password\": \"Premium...",
+    "{\"email\": \"diamond@nerdybro.in\", \"username\": \"diamond_nerd\", \"password\": \"Diamon..."
+  ],
+  "vulnerable": true
+}

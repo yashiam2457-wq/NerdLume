@@ -1,0 +1,65 @@
+name: Defensive Security Assessment & Regression Verification
+
+on:
+  push:
+    branches: [main, security/**]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  security-tests:
+    name: Security Regression & Secret Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio
+
+      - name: Verify Secret Scanning (.gitignore & .env hygiene)
+        run: |
+          echo "Verifying no active secrets or private databases are tracked..."
+          git status
+          if git ls-files | grep -E '(\.env$|\.sqlite3$)'; then
+            echo "ERROR: Committed secret or sqlite database file detected in git index!"
+            exit 1
+          fi
+          echo "Secret check passed: No sensitive files tracked."
+
+      - name: Run Backend & Security Regression Test Suites
+        run: |
+          cd NerdyBro || cd .
+          python -m pytest backend/tests security/regression -v
+
+      - name: Set up Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Node Dependencies
+        run: |
+          cd NerdyBro || cd .
+          npm ci --ignore-scripts || npm install --package-lock-only
+
+      - name: Node Security Vulnerability Audit
+        run: |
+          cd NerdyBro || cd .
+          npm audit --audit-level=critical || true
+

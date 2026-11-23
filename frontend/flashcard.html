@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NerdLume — Flash Cards</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/svg+xml" href="NerdLume_Symbol.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-system.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  --bg: #090a0f;
+  --surface: #12151e;
+  --surface2: #191d2b;
+  --surface3: #242a3d;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --accent: #8b5cf6;
+  --accent2: #6366f1;
+  --accent3: #f43f5e;
+  --gold: #10b981;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --card: #12151e;
+  --font-main: 'Plus Jakarta Sans', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Space Grotesk', 'Syne', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-main);min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column;letter-spacing:-0.01em;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 30%,rgba(192,132,252,0.06) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 70%,rgba(87,200,255,0.05) 0%,transparent 60%);pointer-events:none;z-index:0}
+.noise{position:fixed;inset:0;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+
+/* ── Header ── */
+.fc-header{position:sticky;top:0;z-index:100;background:rgba(11,12,16,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:14px}
+.fc-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--text)}
+.fc-logo span{color:var(--accent)}
+.fc-mode-tag{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:2px;text-transform:uppercase;background:rgba(192,132,252,0.1);color:var(--accent);border:1px solid rgba(192,132,252,0.25);padding:3px 10px;border-radius:20px}
+.fc-topic-txt{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc-known-chip{font-family:'Space Mono',monospace;font-size:.7rem;padding:5px 13px;border-radius:8px;background:rgba(184,255,87,.06);border:1px solid rgba(184,255,87,.25);color:var(--gold);white-space:nowrap}
+.fc-exit-btn{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;transition:all .2s}
+.fc-exit-btn:hover{color:var(--accent3);border-color:rgba(255,107,87,.4)}
+
+/* ── Progress ── */
+.fc-progress-wrap{position:sticky;top:56px;z-index:99;background:rgba(11,12,16,0.95);padding:10px 24px;border-bottom:1px solid var(--border)}
+.fc-prog-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.fc-prog-label{font-family:'Space Mono',monospace;font-size:.65rem;color:var(--muted)}
+.fc-prog-frac{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700}
+.fc-prog-frac em{color:var(--accent);font-style:normal}
+.fc-prog-bar-track{height:6px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.fc-prog-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+/* ── Main Layout ── */
+.fc-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 24px 32px;position:relative;z-index:1;min-height:calc(100vh - 112px)}
+
+/* ── Card Counter ── */
+.fc-counter{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--muted);margin-bottom:22px;letter-spacing:1px;display:flex;align-items:center;gap:12px}
+.fc-diff-badge{font-family:'Space Mono',monospace;font-size:.6rem;padding:3px 10px;border-radius:20px;border:1px solid}
+.fc-diff-easy{background:rgba(184,255,87,.08);color:var(--gold);border-color:rgba(184,255,87,.25)}
+.fc-diff-medium{background:rgba(87,200,255,.08);color:var(--accent2);border-color:rgba(87,200,255,.25)}
+.fc-diff-hard{background:rgba(255,107,87,.08);color:var(--accent3);border-color:rgba(255,107,87,.25)}
+
+/* ── Flip Card ── */
+.fc-scene{width:100%;max-width:700px;height:360px;perspective:1200px;cursor:pointer;margin-bottom:28px}
+
+.fc-card{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.65s cubic-bezier(0.4,0.2,0.2,1);border-radius:24px}
+.fc-card.flipped{transform:rotateY(180deg)}
+
+/* Slide animations */
+.fc-card.slide-out-left{animation:slideOutLeft .3s ease both}
+.fc-card.slide-in-right{animation:slideInRight .3s ease both}
+.fc-card.slide-out-right{animation:slideOutRight .3s ease both}
+.fc-card.slide-in-left{animation:slideInLeft .3s ease both}
+
+@keyframes slideOutLeft{to{opacity:0;transform:translateX(-80px)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(80px)}}
+@keyframes slideOutRight{to{opacity:0;transform:translateX(80px)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-80px)}}
+
+.fc-face{position:absolute;inset:0;border-radius:24px;-webkit-backface-visibility:hidden;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 40px;text-align:center;overflow:hidden}
+
+/* Front face */
+.fc-front{background:linear-gradient(135deg,#14162a,#1a1324);border:1.5px solid rgba(192,132,252,.3)}
+.fc-front::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(192,132,252,.1),transparent);pointer-events:none}
+
+/* Back face */
+.fc-back{background:linear-gradient(135deg,#131f14,#141a24);border:1.5px solid rgba(87,200,255,.3);transform:rotateY(180deg)}
+.fc-back::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 100%,rgba(87,200,255,.08),transparent);pointer-events:none}
+
+.fc-face-label{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;opacity:.5}
+.fc-front .fc-face-label{color:var(--accent)}
+.fc-back .fc-face-label{color:var(--accent2)}
+
+.fc-question-text{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;line-height:1.55;color:var(--text);position:relative;z-index:1}
+.fc-front .fc-q-icon{font-size:2rem;margin-bottom:16px;opacity:.6}
+
+.fc-answer-text{font-family:'DM Sans',sans-serif;font-size:.92rem;line-height:1.65;color:var(--text);text-align:left;position:relative;z-index:1;width:100%}
+
+.fc-flip-hint{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:20px;opacity:.5;letter-spacing:.5px;position:relative;z-index:1}
+
+/* ── Actions ── */
+.fc-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;width:100%;max-width:700px}
+
+.fc-btn{padding:12px 28px;border-radius:12px;font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.fc-btn-answer{background:var(--accent);color:#0b0c10;flex:1;max-width:200px;justify-content:center}
+.fc-btn-answer:hover{box-shadow:0 6px 24px rgba(192,132,252,.35);transform:translateY(-1px)}
+.fc-btn-answer.peeked{background:var(--surface2);color:var(--text);border:1.5px solid var(--border);max-width:200px}
+
+.fc-btn-known{background:rgba(184,255,87,.1);color:var(--gold);border:1.5px solid rgba(184,255,87,.25);flex:1;max-width:160px;justify-content:center}
+.fc-btn-known:hover{background:rgba(184,255,87,.18);transform:translateY(-1px)}
+.fc-btn-known.active{background:rgba(184,255,87,.2);border-color:var(--gold)}
+
+.fc-btn-next{background:var(--surface2);color:var(--text);border:1.5px solid var(--border);flex:1;max-width:160px;justify-content:center}
+.fc-btn-next:hover{border-color:rgba(192,132,252,.3);color:var(--accent)}
+.fc-btn-next:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+.fc-btn-prev{background:none;color:var(--muted);border:1.5px solid var(--border);width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;transition:all .2s;flex-shrink:0}
+.fc-btn-prev:hover{border-color:rgba(192,132,252,.3);color:var(--accent)}
+.fc-btn-prev:disabled{opacity:.3;cursor:not-allowed}
+
+/* ── Dot Navigator ── */
+.fc-dot-nav{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:20px;max-width:700px}
+.fc-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .25s;cursor:pointer;border:none}
+.fc-dot.curr{background:var(--accent);transform:scale(1.3)}
+.fc-dot.known{background:var(--gold)}
+.fc-dot.seen{background:rgba(192,132,252,.4)}
+
+/* ── Results ── */
+.fc-results{display:none;text-align:center;padding:40px 24px;max-width:600px;width:100%;margin:0 auto;animation:fadeUp .4s ease both;position:relative;z-index:1}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fc-res-emoji{font-size:3.5rem;margin-bottom:16px}
+.fc-res-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;margin-bottom:8px}
+.fc-res-sub{font-size:.84rem;color:var(--muted);margin-bottom:28px;line-height:1.6}
+.fc-res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;text-align:center}
+.fc-res-stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 12px}
+.fc-res-stat-num{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:4px}
+.fc-res-stat-lbl{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.5px}
+.fc-res-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.fc-res-btn{padding:12px 28px;border-radius:12px;font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;border:none;transition:all .2s}
+.fc-res-btn-primary{background:var(--accent);color:#0b0c10}
+.fc-res-btn-secondary{background:var(--surface2);color:var(--text);border:1.5px solid var(--border)}
+
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 18px;display:flex;align-items:center;gap:10px;font-size:.82rem;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0}
+
+@media(max-width:600px){
+  .fc-scene{height:300px}
+  .fc-face{padding:24px}
+  .fc-question-text{font-size:.95rem}
+  .fc-answer-text{font-size:.84rem}
+  .fc-btn{padding:10px 20px;font-size:.82rem}
+  .fc-body{padding:24px 16px}
+}
+</style>
+</head>
+<body>
+<!-- Avara Ambient Dynamic Animated Background -->
+<div class="avara-bg-glow">
+  <div class="avara-orb avara-orb-1"></div>
+  <div class="avara-orb avara-orb-2"></div>
+  <div class="avara-orb avara-orb-3"></div>
+</div>
+<div class="noise"></div>
+
+<header class="fc-header">
+  <a href="index.html" class="fc-logo">Nerd<span>Lume</span></a>
+  <div class="fc-mode-tag">FLASH CARDS</div>
+  <div class="fc-topic-txt" id="header-topic">Loading...</div>
+  <div class="fc-known-chip">Known: <span id="known-count">0</span> / <span id="known-total">0</span></div>
+  <button class="fc-exit-btn" onclick="confirmExit()">Exit</button>
+</header>
+
+<!-- Progress -->
+<div class="fc-progress-wrap">
+  <div class="fc-prog-info">
+    <span class="fc-prog-label">PROGRESS</span>
+    <span class="fc-prog-frac"><em id="cur-num">1</em> of <span id="tot-num">10</span> cards</span>
+  </div>
+  <div class="fc-prog-bar-track">
+    <div class="fc-prog-bar-fill" id="prog-fill" style="width:10%"></div>
+  </div>
+</div>
+
+<!-- Body -->
+<div class="fc-body" id="fc-body">
+
+  <!-- Counter row -->
+  <div class="fc-counter">
+    <span id="card-counter">Card 1 of 10</span>
+    <span class="fc-diff-badge fc-diff-medium" id="diff-badge">Medium</span>
+  </div>
+
+  <!-- The actual flip card -->
+  <div class="fc-scene" id="fc-scene" onclick="flipCard()">
+    <div class="fc-card" id="fc-card">
+      <!-- Front -->
+      <div class="fc-face fc-front" id="fc-front">
+        <div class="fc-q-icon"></div>
+        <div class="fc-face-label">Question</div>
+        <div class="fc-question-text" id="fc-q-text">Loading...</div>
+        <div class="fc-flip-hint">Click card or press Space to reveal answer</div>
+      </div>
+      <!-- Back -->
+      <div class="fc-face fc-back" id="fc-back">
+        <div class="fc-face-label">Answer</div>
+        <div class="fc-answer-text" id="fc-a-text">Loading...</div>
+        <div class="fc-flip-hint">Click to flip back</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="fc-actions">
+    <button class="fc-btn-prev" id="btn-prev" onclick="prevCard()" disabled title="Previous card">←</button>
+    <button class="fc-btn fc-btn-answer" id="btn-answer" onclick="revealAnswer()">Show Answer 👁</button>
+    <button class="fc-btn fc-btn-known" id="btn-known" onclick="toggleKnown()" title="Mark as known">✓ I Know This</button>
+    <button class="fc-btn fc-btn-next" id="btn-next" onclick="nextCard()">Next →</button>
+  </div>
+
+  <!-- Dot navigator -->
+  <div class="fc-dot-nav" id="dot-nav"></div>
+
+  <!-- Results screen -->
+  <div class="fc-results" id="fc-results"></div>
+
+</div>
+
+<div id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const TOPIC  = decodeURIComponent(params.get('topic') || 'General Topic');
+const COUNT  = parseInt(params.get('count') || '10');
+const DIFF   = params.get('diff')  || 'medium';
+const SYL    = decodeURIComponent(params.get('syl')   || 'Full Syllabus');
+
+let currentCard = 0;
+let isFlipped   = false;
+let known       = {};  // {i: true}
+let seen        = {};  // {i: true}
+let animating   = false;
+
+// Build flashcard deck
+function buildCards(topic, count, diff) {
+  const diffs = diff === 'mixed'
+    ? ['Easy','Easy','Medium','Medium','Hard']
+    : [diff.charAt(0).toUpperCase() + diff.slice(1)];
+
+  const rawCards = [
+    {q:`What is the fundamental definition of ${topic}?`,a:`${topic} is defined as a principled approach that provides a structured framework for solving a class of computational or analytical problems. It establishes invariants that guarantee correctness and efficiency across all valid input configurations.`},
+    {q:`What is the time complexity of the optimal ${topic} implementation and why?`,a:`O(n log n). This is achieved through divide-and-conquer decomposition: the problem is split into O(log n) levels, with O(n) total work per level. This is provably optimal for comparison-based approaches (lower bound theorem).`},
+    {q:`Name three real-world applications of ${topic}.`,a:`1. Database query optimization — selects optimal execution plans\n2. Network routing — finds shortest paths in dynamic topologies\n3. AI/ML feature selection — reduces dimensionality while preserving variance`},
+    {q:`What are the four most common pitfalls when implementing ${topic}?`,a:`1. Off-by-one errors in boundary conditions\n2. Missing base case in recursive formulation\n3. Ignoring null or empty input edge cases\n4. Over-engineering — choosing complex solution when simple one suffices`},
+    {q:`How does ${topic} differ from brute-force approaches?`,a:`${topic} uses structured decomposition to avoid exhaustive enumeration. While brute force is O(2ⁿ) or O(n!), ${topic} achieves polynomial time through strategic pruning of the solution space and reuse of computed subresults.`},
+    {q:`What is the space complexity of ${topic} and when can it be reduced?`,a:`Base space complexity is O(n) for auxiliary storage. It can be reduced to O(log n) when the recursion stack is the dominant factor, by converting to iterative implementation with explicit stack management.`},
+    {q:`Explain the invariant that ${topic} maintains during execution.`,a:`${topic} maintains the invariant that at each processing step, the partial result represents the optimal solution for the subproblem considered so far. This invariant is established in the base case and preserved through each recursive or iterative step.`},
+    {q:`What does a PYQ on ${topic} typically ask about?`,a:`PYQ patterns: (1) Time/space complexity analysis, (2) Trace through execution on given input, (3) Identify and fix bugs in given implementation, (4) Compare with alternative approach, (5) Application to modified problem variant.`},
+    {q:`In a case study, ${topic} failed on large inputs. What are the likely causes?`,a:`1. Input exceeds stack depth limit (stack overflow in recursion)\n2. Integer overflow in intermediate calculations\n3. Memory limit exceeded — O(n) space insufficient for hardware\n4. Incorrect assumption about input properties (e.g., assumed sorted, was not)`},
+    {q:`State the mathematical proof strategy for ${topic} correctness.`,a:`Proof by strong induction:\n• Base case: Correct for n=1 (verifiable by inspection)\n• Inductive step: Assuming correctness for all inputs of size ≤k, the algorithm decomposes size k+1 into sub-problems of size ≤k, applies the inductive hypothesis, and combines using a provably correct merge. ∴ Correct ∀n≥1. □`},
+    {q:`What design pattern best encapsulates ${topic}?`,a:`The Strategy pattern — it encapsulates the algorithm as an interchangeable object, allowing different implementations to be substituted without changing the calling code. Combined with Template Method for the fixed-structure, variable-implementation aspects.`},
+    {q:`How is ${topic} tested effectively in production systems?`,a:`1. Unit tests: Cover base cases, boundary values, empty inputs\n2. Property-based testing: Verify invariants hold for random inputs\n3. Fuzz testing: Detect crashes from unexpected input shapes\n4. Performance benchmarks: Validate complexity claims at scale\n5. A/B testing: Compare against current production implementation`},
+    {q:`When should you NOT use ${topic}?`,a:`Avoid ${topic} when: (1) Input is guaranteed tiny — simpler O(n²) may be cleaner, (2) Implementation time is constrained and the use case doesn't justify complexity, (3) Problem structure doesn't match ${topic}'s assumptions, (4) Memory constraints prohibit the O(n) auxiliary space requirement.`},
+    {q:`Describe the key academic papers or origins of ${topic}.`,a:`${topic} originates from foundational work in algorithm design, formalized in the mid-20th century. Key academic contributions include the formal complexity analysis, multiple practical implementations, and proof of optimality within the comparison model. Referenced in CLRS (Introduction to Algorithms) as a canonical example.`},
+    {q:`How does ${topic} handle edge cases?`,a:`Proper ${topic} implementations explicitly handle:\n• Empty input → return empty result\n• Single-element input → return as-is (base case)\n• Duplicate values → defined behavior (stable or unstable)\n• Maximum-size input → verify no integer overflow in size calculations\n• Null/undefined input → raise appropriate exception before processing`},
+    {q:`What is the difference between ${topic} and its variants?`,a:`The canonical form establishes the core guarantee. Variants modify specific properties:\n• Randomized variant: Introduces probabilistic choices to avoid worst-case inputs\n• Parallel variant: Distributes work across multiple processors for large inputs\n• Approximate variant: Sacrifices exactness for speed when exact answer is unnecessary`},
+    {q:`Write pseudocode for the core step of ${topic}.`,a:`function process(input):\n  if input.size ≤ 1: return input  // base case\n  left, right = split(input)        // divide\n  leftResult  = process(left)       // conquer\n  rightResult = process(right)      // conquer\n  return combine(leftResult, rightResult) // merge`},
+    {q:`How is ${topic} commonly examined in university finals?`,a:`University exam patterns: (1) Derivation of time complexity using recurrence relations, (2) Comparison with competing approach on provided dataset, (3) Correctness proof sketch, (4) Implementation in specified language with test case tracing, (5) Optimization question — improve given naive implementation.`},
+    {q:`What is the recurrence relation for ${topic} and how is it solved?`,a:`Recurrence: T(n) = 2T(n/2) + O(n)\nSolved by Master Theorem (Case 2): a=2, b=2, f(n)=O(n), n^(log_b a) = n^1 = n\nSince f(n) = Θ(n^(log_b a)), solution is T(n) = Θ(n log n).`},
+    {q:`Explain the concept of stability in the context of ${topic}.`,a:`Stability means equal elements preserve their relative input order in the output. ${topic}'s canonical implementation is stable — critical when sorting records with multiple keys (e.g., sort by name, then sort stably by age preserves name order within same age group).`},
+  ];
+
+  const shuffled = [...rawCards].sort(() => Math.random() - 0.5);
+  const selected = [];
+  while (selected.length < count) selected.push(...shuffled);
+  return selected.slice(0, count).map((c, i) => ({...c, index: i, difficulty: diffs[i % diffs.length]}));
+}
+
+const CARDS = buildCards(TOPIC, COUNT, DIFF);
+
+function getUserPlan() {
+  try {
+    const s = localStorage.getItem('nb_session');
+    return s ? (JSON.parse(s).plan || 'free') : 'guest';
+  } catch (e) {
+    return 'guest';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const plan = getUserPlan();
+  const hasAccess = plan === 'free-premium' || plan === 'diamond';
+
+  if (!hasAccess) {
+    const mainWrap = document.querySelector('.fc-main') || document.body;
+    mainWrap.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:32px;text-align:center;">
+        <div style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);border-radius:12px;padding:8px 16px;font-family:monospace;font-size:12px;color:var(--accent,#00e5ff);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px;">
+          PREMIUM MODULE • REPETITION SUITE
+        </div>
+        <h1 style="font-size:2rem;font-weight:700;margin-bottom:12px;color:#fff;">
+          Flashcards Suite Locked
+        </h1>
+        <p style="color:rgba(255,255,255,0.6);max-width:540px;line-height:1.6;font-size:0.95rem;margin-bottom:28px;">
+          Spaced repetition flashcards, memory decks, and progressive revision require a Scholar Pro or Diamond plan.
+        </p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+          <a href="index.html" class="fc-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:var(--accent,#00e5ff);color:#000;font-weight:700;padding:12px 24px;border-radius:8px;">
+            Upgrade With Scholar Pro
+          </a>
+          <a href="index.html" class="fc-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,0.2);color:#fff;padding:12px 24px;border-radius:8px;">
+            Return to Dashboard
+          </a>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById('header-topic').textContent = TOPIC + ' · ' + SYL.replace(/\+/g,' ');
+  document.getElementById('known-total').textContent  = COUNT;
+  document.getElementById('tot-num').textContent      = COUNT;
+  buildDotNav();
+  renderCard(0, 'right');
+  document.addEventListener('keydown', handleKeyboard);
+});
+
+// Build dot navigator
+function buildDotNav() {
+  const nav = document.getElementById('dot-nav');
+  nav.innerHTML = '';
+  CARDS.forEach((_, i) => {
+    const dot   = document.createElement('button');
+    dot.className = 'fc-dot' + (i === 0 ? ' curr' : '');
+    dot.id        = 'dot-' + i;
+    dot.title     = 'Card ' + (i + 1);
+    dot.onclick   = () => jumpToCard(i);
+    nav.appendChild(dot);
+  });
+}
+
+function updateDotNav() {
+  CARDS.forEach((_, i) => {
+    const dot = document.getElementById('dot-' + i);
+    if (!dot) return;
+    dot.className = 'fc-dot';
+    if (i === currentCard) dot.classList.add('curr');
+    else if (known[i])    dot.classList.add('known');
+    else if (seen[i])     dot.classList.add('seen');
+  });
+}
+
+// Render card (direction: 'left' | 'right' | 'none')
+function renderCard(index, direction) {
+  const card = CARDS[index];
+  seen[index] = true;
+
+  // Update static elements
+  document.getElementById('fc-q-text').textContent     = card.q;
+  document.getElementById('fc-a-text').innerHTML       = card.a.replace(/\n/g, '<br>');
+  document.getElementById('card-counter').textContent  = `Card ${index + 1} of ${COUNT}`;
+  document.getElementById('cur-num').textContent       = index + 1;
+  document.getElementById('prog-fill').style.width     = ((index + 1) / COUNT * 100) + '%';
+
+  const diffEl  = document.getElementById('diff-badge');
+  const diffCls = {Easy:'fc-diff-easy', Medium:'fc-diff-medium', Hard:'fc-diff-hard'};
+  diffEl.className = 'fc-diff-badge ' + (diffCls[card.difficulty] || 'fc-diff-medium');
+  diffEl.textContent = card.difficulty;
+
+  // Reset flip
+  const fcCard = document.getElementById('fc-card');
+  fcCard.classList.remove('flipped');
+  isFlipped = false;
+
+  // Update answer button
+  const ansBtn = document.getElementById('btn-answer');
+  ansBtn.className = 'fc-btn fc-btn-answer';
+  ansBtn.textContent = 'Show Answer 👁';
+
+  // Update known button
+  const knownBtn = document.getElementById('btn-known');
+  knownBtn.className = 'fc-btn fc-btn-known' + (known[index] ? ' active' : '');
+  knownBtn.textContent = known[index] ? '★ Known!' : '✓ I Know This';
+
+  // Prev / Next disabled state
+  document.getElementById('btn-prev').disabled = index === 0;
+  document.getElementById('btn-next').disabled = false;
+
+  updateDotNav();
+  updateKnownCount();
+}
+
+function flipCard() {
+  const fcCard = document.getElementById('fc-card');
+  isFlipped    = !isFlipped;
+  fcCard.classList.toggle('flipped', isFlipped);
+
+  // Update answer button to show "Hide Answer" when flipped
+  const ansBtn = document.getElementById('btn-answer');
+  if (isFlipped) {
+    ansBtn.className = 'fc-btn fc-btn-answer peeked';
+    ansBtn.textContent = 'Hide Answer 🙈';
+  } else {
+    ansBtn.className = 'fc-btn fc-btn-answer';
+    ansBtn.textContent = 'Show Answer 👁';
+  }
+}
+
+function revealAnswer() { flipCard(); }
+
+function jumpToCard(i) {
+  if (animating || i === currentCard) return;
+  const dir = i > currentCard ? 'right' : 'left';
+  slideToCard(i, dir);
+}
+
+function nextCard() {
+  if (animating) return;
+  if (currentCard >= CARDS.length - 1) {
+    showResults();
+    return;
+  }
+  slideToCard(currentCard + 1, 'right');
+}
+
+function prevCard() {
+  if (animating || currentCard === 0) return;
+  slideToCard(currentCard - 1, 'left');
+}
+
+function slideToCard(nextIndex, direction) {
+  if (animating) return;
+  animating = true;
+
+  const fcCard  = document.getElementById('fc-card');
+  const outClass = direction === 'right' ? 'slide-out-left' : 'slide-out-right';
+  const inClass  = direction === 'right' ? 'slide-in-right' : 'slide-in-left';
+
+  fcCard.classList.remove('flipped');
+  fcCard.classList.add(outClass);
+
+  setTimeout(() => {
+    currentCard = nextIndex;
+    fcCard.classList.remove(outClass, 'slide-in-right', 'slide-in-left');
+    renderCard(nextIndex, direction);
+    fcCard.classList.add(inClass);
+
+    setTimeout(() => {
+      fcCard.classList.remove(inClass);
+      animating = false;
+    }, 320);
+  }, 300);
+}
+
+function toggleKnown() {
+  known[currentCard] = !known[currentCard];
+  const btn = document.getElementById('btn-known');
+  btn.className = 'fc-btn fc-btn-known' + (known[currentCard] ? ' active' : '');
+  btn.textContent = known[currentCard] ? '★ Known!' : '✓ I Know This';
+  updateKnownCount();
+  updateDotNav();
+  if (known[currentCard]) showToast('✓ Marked as known!');
+}
+
+function updateKnownCount() {
+  const n = Object.values(known).filter(Boolean).length;
+  document.getElementById('known-count').textContent = n;
+}
+
+function handleKeyboard(e) {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  if (e.key === 'ArrowRight' || e.key === 'n') nextCard();
+  if (e.key === 'ArrowLeft'  || e.key === 'p') prevCard();
+  if (e.key === 'k') toggleKnown();
+}
+
+function showResults() {
+  document.getElementById('fc-scene').style.display    = 'none';
+  document.querySelector('.fc-counter').style.display  = 'none';
+  document.querySelector('.fc-actions').style.display  = 'none';
+  document.getElementById('dot-nav').style.display     = 'none';
+  document.getElementById('prog-fill').style.width     = '100%';
+
+  const total    = CARDS.length;
+  const knownN   = Object.values(known).filter(Boolean).length;
+  const seenN    = Object.values(seen).filter(Boolean).length;
+  const pct      = Math.round((knownN / total) * 100);
+  const grade    = pct >= 80 ? 'Mastered!' : pct >= 50 ? 'Good Progress!' : 'Keep Reviewing!';
+
+  const res = document.getElementById('fc-results');
+  res.style.display = 'block';
+  res.innerHTML = `
+    <div class="fc-res-emoji">${pct >= 70 ? 'Good' : 'Need Work'}</div>
+    <div class="fc-res-title">${grade}</div>
+    <div class="fc-res-sub">${TOPIC} · ${SYL.replace(/\+/g,' ')} · ${COUNT} cards reviewed</div>
+    <div class="fc-res-stats">
+      <div class="fc-res-stat"><div class="fc-res-stat-num" style="color:var(--gold)">${knownN}</div><div class="fc-res-stat-lbl">KNOWN</div></div>
+      <div class="fc-res-stat"><div class="fc-res-stat-num" style="color:var(--accent)">${total - knownN}</div><div class="fc-res-stat-lbl">REVIEW AGAIN</div></div>
+      <div class="fc-res-stat"><div class="fc-res-stat-num" style="color:var(--accent2)">${pct}%</div><div class="fc-res-stat-lbl">MASTERY</div></div>
+    </div>
+    <div class="fc-res-actions">
+      <button class="fc-res-btn fc-res-btn-primary" onclick="reviewUnknown()">Review Unknown</button>
+      <button class="fc-res-btn fc-res-btn-secondary" onclick="location.reload()">Retry All</button>
+      <button class="fc-res-btn fc-res-btn-secondary" onclick="location.href='index.html'">← Home</button>
+    </div>`;
+}
+
+function reviewUnknown() {
+  // Restart with only the cards not marked as known
+  // (simple: just reload for now — full implementation would filter)
+  location.reload();
+}
+
+function confirmExit() {
+  if (confirm('Exit flash cards? Progress will be lost.')) location.href = 'index.html';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.lucide) { lucide.createIcons(); }
+});
+</script>
+</body>
+</html>

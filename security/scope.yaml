@@ -1,0 +1,74 @@
+# Security Assessment Scope and Boundary Specification
+version: "1.0.0"
+assessment_type: "Defensive Security Assessment & Hardening"
+target_system: "NerdLume / NerdyBro AI Study Assistant"
+
+authorization:
+  status: "AUTHORIZED"
+  mode: "Defensive Security Testing & Safe Remediation"
+  environment: "Local Development & Isolated Sandbox"
+
+in_scope:
+  repositories:
+    - path: "c:/Users/Loq/Documents/programs/NerdyBro"
+      components:
+        - "backend/server.py (Python HTTP/API & Multi-Agent Core)"
+        - "backend/server.js (Node.js API Scaffold)"
+        - "root web assets (*.html, *.js, *.css)"
+        - "src/ (Next.js 14 Web Application)"
+  endpoints:
+    base_url: "http://127.0.0.1:5050"
+    routes:
+      - path: "/api/health"
+        methods: ["GET"]
+      - path: "/api/plans"
+        methods: ["GET"]
+      - path: "/api/auth/signup"
+        methods: ["POST"]
+      - path: "/api/auth/login"
+        methods: ["POST"]
+      - path: "/api/auth/google"
+        methods: ["POST"]
+      - path: "/api/auth/me"
+        methods: ["GET"]
+      - path: "/api/auth/logout"
+        methods: ["POST"]
+      - path: "/api/auth/reset-password"
+        methods: ["POST"]
+      - path: "/api/profile"
+        methods: ["GET", "PATCH"]
+      - path: "/api/generate"
+        methods: ["POST"]
+      - path: "/api/history"
+        methods: ["GET", "DELETE"]
+      - path: "/api/history/{id}/download"
+        methods: ["GET"]
+      - path: "/api/ai-accounts"
+        methods: ["GET"]
+      - path: "/* (Static Asset Dispatcher)"
+        methods: ["GET"]
+  document_ingestion:
+    - formats: [".docx", ".txt", ".md", ".pdf", ".csv"]
+    - pipelines: ["convert_file_to_markdown_gemini", "create_docx_with_reference_formatting"]
+  accounts:
+    synthetic_test_users:
+      - role: "free"
+        id: "test_sec_user_free"
+      - role: "free-premium"
+        id: "test_sec_user_premium"
+      - role: "diamond"
+        id: "test_sec_user_diamond"
+
+out_of_scope:
+  - "Production cloud infrastructure"
+  - "External third-party AI provider endpoints (Google Gemini, Mistral, Groq, OpenAI)"
+  - "Public network flooding, DoS, and high-volume load stress"
+  - "Arbitrary external domains and public IPs"
+
+safety_boundaries:
+  - "No destructive testing or real user account access"
+  - "Use synthetic test data and canary tokens only (e.g., CANARY_SECRET_7F31)"
+  - "Read-only SQL testing without schema destruction"
+  - "Strict rate limits on active test harnesses"
+  - "Immediate halting upon unexpected side effects or boundary crossings"
+

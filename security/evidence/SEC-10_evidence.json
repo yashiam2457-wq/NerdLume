@@ -1,0 +1,5 @@
+{
+  "test_id": "TC-A06",
+  "description": "Missing modern security headers in server.js and tight CSP",
+  "vulnerable": true
+}

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NerdLume — Mock Examination Simulator</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/svg+xml" href="NerdLume_Symbol.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-system.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  --bg: #090a0f;
+  --surface: #12151e;
+  --surface2: #191d2b;
+  --surface3: #242a3d;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --accent: #6366f1;
+  --green: #10b981;
+  --red: #f43f5e;
+  --purple: #8b5cf6;
+  --warn: #f59e0b;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --card: #12151e;
+  --font-main: 'Plus Jakarta Sans', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Space Grotesk', 'Syne', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-main);min-height:100vh;overflow-x:hidden;letter-spacing:-0.01em;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 40% at 15% 20%,rgba(87,200,255,.05) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 85% 80%,rgba(184,255,87,.04) 0%,transparent 60%)}
+.noise{position:fixed;inset:0;opacity:.025;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ── Keyframes ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes timerPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(.97)}}
+@keyframes ringWarn{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0)}50%{box-shadow:0 0 16px 4px rgba(251,191,36,.25)}}
+@keyframes ringDanger{0%,100%{box-shadow:0 0 0 0 rgba(255,107,87,0)}50%{box-shadow:0 0 20px 6px rgba(255,107,87,.3)}}
+
+/* ══ HEADER ══ */
+.mk-header{position:sticky;top:0;z-index:100;background:rgba(11,12,16,.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:0 24px;height:62px;display:flex;align-items:center;gap:12px}
+.mk-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);flex-shrink:0}
+.mk-logo-icon{width:30px;height:30px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+.mk-logo span{color:var(--accent)}
+.mk-badge{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:2px;text-transform:uppercase;background:rgba(87,200,255,.1);color:var(--accent);border:1px solid rgba(87,200,255,.25);padding:3px 10px;border-radius:20px;flex-shrink:0}
+.mk-topic{font-family:'Space Mono',monospace;font-size:.66rem;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── TIMER WIDGET ── */
+.mk-timer-wrap{display:flex;align-items:center;gap:10px;padding:5px 14px 5px 7px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;transition:border-color .4s,background .4s;flex-shrink:0}
+.mk-timer-wrap.warn{border-color:rgba(251,191,36,.6);background:rgba(251,191,36,.05);animation:ringWarn 2s ease-in-out infinite}
+.mk-timer-wrap.danger{border-color:rgba(255,107,87,.7);background:rgba(255,107,87,.07);animation:ringDanger 1s ease-in-out infinite}
+
+/* SVG ring */
+.mk-ring{position:relative;width:40px;height:40px;flex-shrink:0}
+.mk-ring svg{display:block;transform:rotate(-90deg)}
+.mtr-bg {fill:none;stroke:var(--border);stroke-width:4}
+.mtr-arc{fill:none;stroke:var(--accent);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .98s linear,stroke .5s}
+.mk-timer-wrap.warn   .mtr-arc{stroke:var(--warn)}
+.mk-timer-wrap.danger .mtr-arc{stroke:var(--red)}
+/* Pct text inside ring */
+.mk-ring-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.mk-ring-pct{font-family:'Space Mono',monospace;font-size:.46rem;font-weight:700;color:var(--muted);line-height:1}
+
+/* Countdown text beside ring */
+.mk-timer-info{display:flex;flex-direction:column;gap:1px}
+.mk-timer-val{font-family:'Space Mono',monospace;font-size:.96rem;font-weight:700;color:var(--text);letter-spacing:.5px;line-height:1.1}
+.mk-timer-wrap.warn   .mk-timer-val{color:var(--warn)}
+.mk-timer-wrap.danger .mk-timer-val{color:var(--red)}
+.mk-timer-sub{font-family:'Space Mono',monospace;font-size:.48rem;color:var(--muted);letter-spacing:.5px}
+
+/* ── Header right ── */
+.mk-live-scores{display:flex;gap:6px;flex-shrink:0}
+.mk-score-chip{font-family:'Space Mono',monospace;font-size:.68rem;padding:5px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);white-space:nowrap;transition:all .3s}
+.mk-score-chip.pos{border-color:rgba(184,255,87,.35);color:var(--green)}
+.mk-score-chip.neg{border-color:rgba(255,107,87,.35);color:var(--red)}
+.mk-submit-btn{padding:8px 20px;background:var(--accent);color:#0b0c10;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:800;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.mk-submit-btn:hover{box-shadow:0 4px 18px rgba(87,200,255,.35);transform:translateY(-1px)}
+.mk-exit-btn{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;transition:all .2s;flex-shrink:0}
+.mk-exit-btn:hover{color:var(--red);border-color:rgba(255,107,87,.4)}
+
+/* ── Full-width time bar under header ── */
+.mk-timebar{height:4px;background:var(--surface2);position:relative;z-index:99}
+.mk-timebar-fill{position:absolute;left:0;top:0;height:100%;width:100%;background:var(--accent);transition:width .98s linear,background .5s}
+.mk-timebar-fill.warn{background:var(--warn)}
+.mk-timebar-fill.danger{background:var(--red)}
+
+/* ── Question progress strip ── */
+.mk-prog-strip{position:sticky;top:66px;z-index:98;background:rgba(11,12,16,.96);padding:8px 24px;border-bottom:1px solid var(--border)}
+.mk-prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.mk-prog-stats{display:flex;gap:14px}
+.mk-pstat{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted)}
+.mk-pstat span{font-weight:700}
+.mk-pstat.g span{color:var(--green)}
+.mk-pstat.r span{color:var(--red)}
+.mk-pstat.w span{color:var(--warn)}
+.mk-prog-frac{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700}
+.mk-prog-track{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.mk-prog-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:3px;transition:width .5s}
+
+/* ══ LAYOUT ══ */
+.mk-layout{display:grid;grid-template-columns:268px 1fr;min-height:calc(100vh - 118px);position:relative;z-index:1}
+
+/* ── Sidebar ── */
+.mk-sidebar{background:var(--surface);border-right:1px solid var(--border);padding:18px 14px;overflow-y:auto;position:sticky;top:118px;height:calc(100vh - 118px)}
+.mk-sidebar::-webkit-scrollbar{width:3px}
+.mk-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.mk-sb-title{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.mk-sb-sub{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);margin-bottom:14px}
+.mk-qlist{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:16px}
+.mk-qnum{width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Space Mono',monospace;font-size:.68rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.mk-qnum:hover{border-color:var(--accent);color:var(--accent)}
+.mk-qnum.current{border-color:var(--accent);background:rgba(87,200,255,.13);color:var(--accent);box-shadow:0 0 0 2px rgba(87,200,255,.15)}
+.mk-qnum.answered{border-color:rgba(184,255,87,.4);background:rgba(184,255,87,.07);color:var(--green)}
+.mk-qnum.marked{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.07);color:var(--warn)}
+.mk-qnum.unanswered{border-color:rgba(107,112,128,.25);opacity:.6}
+.mk-legend{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+.mk-leg{display:flex;align-items:center;gap:7px;font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted)}
+.mk-leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.mk-scheme{padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
+.mk-sch-title{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.mk-sch-row{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:.65rem;margin-bottom:5px}
+.mk-sch-row:last-child{margin-bottom:0}
+.c-g{color:var(--green);font-weight:700}
+.c-r{color:var(--red);font-weight:700}
+.c-m{color:var(--muted)}
+
+/* ── Main ── */
+.mk-main{padding:28px 36px 60px;max-width:880px}
+.mk-qcard{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:28px;margin-bottom:18px;animation:fadeUp .3s ease both}
+.mk-q-meta{display:flex;align-items:center;gap:9px;margin-bottom:18px;flex-wrap:wrap}
+.mk-qnum-badge{font-family:'Space Mono',monospace;font-size:.6rem;font-weight:700;background:rgba(87,200,255,.1);color:var(--accent);border:1px solid rgba(87,200,255,.25);padding:3px 10px;border-radius:6px}
+.mk-type-badge{font-family:'Space Mono',monospace;font-size:.58rem;padding:3px 9px;border-radius:6px;border:1px solid}
+.t-mcq{background:rgba(87,200,255,.07);color:var(--accent);border-color:rgba(87,200,255,.25)}
+.t-msq{background:rgba(192,132,252,.07);color:var(--purple);border-color:rgba(192,132,252,.25)}
+.t-txt{background:rgba(255,107,87,.07);color:var(--red);border-color:rgba(255,107,87,.25)}
+.mk-diff-badge{font-family:'Space Mono',monospace;font-size:.57rem;padding:2px 8px;border-radius:5px}
+.d-easy{color:var(--green);background:rgba(184,255,87,.07)}
+.d-medium{color:var(--warn);background:rgba(251,191,36,.07)}
+.d-hard{color:var(--red);background:rgba(255,107,87,.07)}
+.mk-marks{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);margin-left:auto}
+.mk-qtext{font-family:'Syne',sans-serif;font-size:1.02rem;font-weight:700;line-height:1.56;margin-bottom:22px}
+.mk-opts{display:flex;flex-direction:column;gap:10px}
+.mk-opt{display:flex;align-items:flex-start;gap:13px;padding:13px 16px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:all .2s;user-select:none}
+.mk-opt:hover{border-color:rgba(87,200,255,.35);background:rgba(87,200,255,.03)}
+.mk-opt.sel{border-color:var(--accent);background:rgba(87,200,255,.07)}
+.mk-opt.sel .mk-opt-key{background:var(--accent);color:#0b0c10;border-color:var(--accent)}
+.mk-opt.msq-sel{border-color:var(--purple);background:rgba(192,132,252,.06)}
+.mk-opt.msq-sel .mk-opt-key{background:var(--purple);color:#0b0c10;border-color:var(--purple)}
+.mk-opt-key{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.68rem;font-weight:700;flex-shrink:0;transition:all .2s;color:var(--muted)}
+.mk-opt-text{font-size:.88rem;line-height:1.5;padding-top:3px;color:var(--text)}
+.mk-msq-note{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--purple);margin-bottom:12px;padding:6px 10px;background:rgba(192,132,252,.06);border-radius:6px;border:1px solid rgba(192,132,252,.15)}
+.mk-textarea{width:100%;padding:14px 16px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;resize:vertical;min-height:110px;outline:none;transition:border-color .2s}
+.mk-textarea:focus{border-color:rgba(87,200,255,.5)}
+.mk-action-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mk-btn{padding:11px 22px;border-radius:11px;font-family:'Syne',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+.mk-btn.primary{background:var(--accent);color:#0b0c10}
+.mk-btn.primary:hover{box-shadow:0 6px 20px rgba(87,200,255,.3);transform:translateY(-1px)}
+.mk-btn.ghost{background:var(--surface2);color:var(--text);border:1.5px solid var(--border)}
+.mk-btn.ghost:hover{border-color:rgba(87,200,255,.3);color:var(--accent)}
+.mk-btn.mark{background:rgba(251,191,36,.1);color:var(--warn);border:1.5px solid rgba(251,191,36,.3);font-size:.78rem}
+.mk-btn.mark:hover{background:rgba(251,191,36,.18)}
+.mk-btn.clear{background:none;color:var(--muted);border:1.5px solid var(--border);font-size:.78rem}
+.mk-btn.clear:hover{color:var(--red);border-color:rgba(255,107,87,.35)}
+
+/* ══ RESULTS ══ */
+.mk-results{display:none;padding:36px;max-width:800px;margin:0 auto;animation:fadeUp .4s ease both}
+.mk-results.show{display:block}
+
+/* Hero */
+.res-hero{text-align:center;margin-bottom:28px}
+.res-emoji{font-size:3rem;margin-bottom:10px}
+.res-grade{font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;margin-bottom:5px}
+.res-subtitle{font-size:.84rem;color:var(--muted)}
+
+/* Score ring */
+.res-ring-wrap{position:relative;width:160px;height:160px;margin:20px auto 8px}
+.res-ring-wrap svg{transform:rotate(-90deg);display:block}
+.rr-bg{fill:none;stroke:var(--border);stroke-width:9}
+.rr-arc{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)}
+.res-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.res-ring-pct{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;line-height:1}
+.res-ring-lbl{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);margin-top:2px}
+.res-score-line{text-align:center;font-family:'Space Mono',monospace;font-size:.72rem;color:var(--muted);margin-bottom:28px}
+
+/* Timer cards */
+.res-timer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+.res-tc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center}
+.res-tc.blue{border-color:rgba(87,200,255,.25);background:rgba(87,200,255,.04)}
+.res-tc.green{border-color:rgba(184,255,87,.22);background:rgba(184,255,87,.04)}
+.res-tc-icon{font-size:1.4rem;margin-bottom:7px}
+.res-tc-num{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;margin-bottom:3px}
+.res-tc-lbl{font-family:'Space Mono',monospace;font-size:.56rem;color:var(--muted);letter-spacing:.5px}
+
+/* Timer bar */
+.res-tbar-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:22px}
+.res-tbar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.res-tbar-lbl{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted)}
+.res-tbar-val{font-family:'Space Mono',monospace;font-size:.62rem;color:var(--accent)}
+.res-tbar-track{height:10px;background:var(--surface2);border-radius:5px;overflow:hidden;margin-bottom:8px}
+.res-tbar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--accent),var(--green))}
+.res-tbar-foot{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted)}
+
+/* Stats grid */
+.res-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.res-stat{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:15px;text-align:center}
+.res-stat-n{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:3px}
+.res-stat-l{font-family:'Space Mono',monospace;font-size:.57rem;color:var(--muted);letter-spacing:.5px}
+
+/* Divider */
+.res-divider{display:flex;align-items:center;gap:12px;padding:10px 0}
+.res-div-line{flex:1;height:1px;background:var(--border)}
+.res-div-lbl{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);white-space:nowrap;letter-spacing:1px}
+
+/* Breakdown */
+.res-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:26px}
+.res-bk{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:16px 18px}
+.res-bk-title{font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.res-bk-row{font-family:'Syne',sans-serif;font-size:.98rem;font-weight:800;margin-bottom:6px}
+
+/* Actions */
+.res-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 18px;display:flex;align-items:center;gap:9px;font-size:.82rem;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .mk-layout{grid-template-columns:1fr}
+  .mk-sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);max-height:200px}
+  .mk-main{padding:18px 14px 60px}
+  .mk-live-scores{display:none}
+  .res-timer-grid{grid-template-columns:1fr 1fr}
+  .res-stats{grid-template-columns:1fr 1fr}
+  .res-breakdown{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<!-- Avara Ambient Dynamic Animated Background -->
+<div class="avara-bg-glow">
+  <div class="avara-orb avara-orb-1"></div>
+  <div class="avara-orb avara-orb-2"></div>
+  <div class="avara-orb avara-orb-3"></div>
+</div>
+<div class="noise"></div>
+
+<!-- ══ HEADER ══ -->
+<header class="mk-header">
+  <a href="index.html" class="mk-logo">
+    <div class="mk-logo-icon"></div>
+    Nerd<span>Lume</span>
+  </a>
+  <div class="mk-badge">MOCK TEST</div>
+  <div class="mk-topic" id="hdr-topic">Loading…</div>
+
+  <!-- TIMER WIDGET -->
+  <div class="mk-timer-wrap" id="mk-timer">
+    <div class="mk-ring">
+      <svg width="40" height="40" viewBox="0 0 40 40">
+        <circle class="mtr-bg"  cx="20" cy="20" r="16"/>
+        <circle class="mtr-arc" cx="20" cy="20" r="16" id="timer-arc"
+          stroke-dasharray="100.53" stroke-dashoffset="0"/>
+      </svg>
+      <div class="mk-ring-inner">
+        <span class="mk-ring-pct" id="timer-pct">100%</span>
+      </div>
+    </div>
+    <div class="mk-timer-info">
+      <div class="mk-timer-val" id="timer-val">--:--</div>
+      <div class="mk-timer-sub">remaining</div>
+    </div>
+  </div>
+
+  <div class="mk-live-scores">
+    <div class="mk-score-chip pos">+<span id="live-pos">0</span></div>
+    <div class="mk-score-chip neg">−<span id="live-neg">0</span></div>
+  </div>
+  <button class="mk-submit-btn" onclick="confirmSubmit()">Submit Test ✓</button>
+  <button class="mk-exit-btn"   onclick="exitTest()">✕ Exit</button>
+</header>
+
+<!-- Full-width time bar -->
+<div class="mk-timebar"><div class="mk-timebar-fill" id="timebar-fill"></div></div>
+
+<!-- Question progress strip -->
+<div class="mk-prog-strip">
+  <div class="mk-prog-row">
+    <div class="mk-prog-stats">
+      <div class="mk-pstat g">Answered: <span id="p-ans">0</span></div>
+      <div class="mk-pstat r">Unattempted: <span id="p-unattempt">0</span></div>
+      <div class="mk-pstat w">Marked: <span id="p-mark">0</span></div>
+    </div>
+    <div class="mk-prog-frac">Q <span id="prog-cur">1</span> / <span id="prog-tot">—</span></div>
+  </div>
+  <div class="mk-prog-track"><div class="mk-prog-bar" id="prog-bar" style="width:0%"></div></div>
+</div>
+
+<!-- ══ BODY ══ -->
+<div class="mk-layout">
+
+  <aside class="mk-sidebar">
+    <div class="mk-sb-title">Question Panel</div>
+    <div class="mk-sb-sub" id="sb-sub">Loading…</div>
+    <div class="mk-qlist" id="mk-qlist"></div>
+
+    <div class="mk-legend">
+      <div class="mk-leg"><div class="mk-leg-dot" style="background:rgba(87,200,255,.25);border:1px solid var(--accent)"></div>Current</div>
+      <div class="mk-leg"><div class="mk-leg-dot" style="background:rgba(184,255,87,.12);border:1px solid rgba(184,255,87,.4)"></div>Answered</div>
+      <div class="mk-leg"><div class="mk-leg-dot" style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4)"></div>Marked for Review</div>
+      <div class="mk-leg"><div class="mk-leg-dot" style="background:var(--surface2);border:1px solid var(--border)"></div>Not Attempted</div>
+    </div>
+
+    <div class="mk-scheme">
+      <div class="mk-sch-title">Marking Scheme</div>
+      <div class="mk-sch-row"><span>MCQ Correct</span><span class="c-g">+4</span></div>
+      <div class="mk-sch-row"><span>MCQ Wrong</span><span class="c-r">−1</span></div>
+      <div class="mk-sch-row"><span>MSQ Full Correct</span><span class="c-g">+4</span></div>
+      <div class="mk-sch-row"><span>MSQ Partial</span><span class="c-g">+2</span></div>
+      <div class="mk-sch-row"><span>MSQ Wrong</span><span class="c-r">−2</span></div>
+      <div class="mk-sch-row"><span>Descriptive</span><span class="c-g">+3</span></div>
+      <div class="mk-sch-row"><span>Unattempted</span><span class="c-m">0</span></div>
+    </div>
+  </aside>
+
+  <main class="mk-main" id="mk-main">
+    <div id="q-area"></div>
+    <div id="results-area" class="mk-results"></div>
+  </main>
+
+</div>
+<div id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
+
+<script>
+/* ══ CONFIG ══ */
+const QP = new URLSearchParams(location.search);
+let launchCfg = null;
+try {
+  launchCfg = JSON.parse(sessionStorage.getItem('nb_practice_launch') || 'null');
+} catch (e) {
+  launchCfg = null;
+}
+
+const TOPIC = decodeURIComponent(QP.get('topic') || launchCfg?.topic || 'General Topic');
+const COUNT = Math.min(50, Math.max(5, parseInt(QP.get('count') || launchCfg?.count || '10')));
+const DIFF  = (QP.get('diff') || launchCfg?.diff || 'medium').toLowerCase();
+const SYL   = decodeURIComponent(QP.get('syl') || launchCfg?.syl || 'Full Syllabus').replace(/\+/g, ' ');
+
+/* ══ TIMER STATE ══ */
+const timerFromUrl = parseInt(QP.get('timer') || '', 10);
+const timerFromSession = parseInt(launchCfg?.timer || '', 10);
+const timerCandidate = Number.isFinite(timerFromUrl) ? timerFromUrl : timerFromSession;
+const TIMER_PER_Q = Math.min(3600, Math.max(30, Number.isFinite(timerCandidate) ? timerCandidate : 120)); // seconds per Q
+const TOTAL_SECS = COUNT * TIMER_PER_Q; // total seconds
+const ARC_C      = 2 * Math.PI * 16; // circumference r=16 → ≈100.53
+let timeLeft     = TOTAL_SECS;
+let timerTick    = null;
+
+/* ══ QUIZ STATE ══ */
+let currentQ  = 0;
+let answers   = {};
+let marked    = {};
+let submitted = false;
+
+/* ══ QUESTION BANK ══ */
+function buildQuestions() {
+  const diffCycle = DIFF === 'mixed'
+    ? ['Easy','Medium','Hard','Medium','Easy']
+    : [DIFF.charAt(0).toUpperCase() + DIFF.slice(1)];
+
+  const bank = [
+    {t:'mcq',q:`Which principle BEST defines the core of ${TOPIC}?`,
+     o:['A foundational mechanism governing all related phenomena','An abstract concept with no practical use','A temporary workaround','A technique exclusive to research'],a:0},
+    {t:'mcq',q:`What is the PRIMARY purpose of ${TOPIC} in engineering systems?`,
+     o:['To complicate existing systems','To solve problems efficiently using structured methods','To delay solutions','To replace all methodologies'],a:1},
+    {t:'mcq',q:`In ${TOPIC}, when time complexity exceeds bounds the system will:`,
+     o:['Improve output quality','Degrade performance or time out','Show minor display glitches','Nothing observable'],a:1},
+    {t:'mcq',q:`Which design pattern is most closely associated with ${TOPIC}?`,
+     o:['Singleton','Observer','Strategy','Decorator'],a:2},
+    {t:'mcq',q:`[PYQ] What is the space complexity of naive ${TOPIC} implementation?`,
+     o:['O(1)','O(log n)','O(n)','O(n²)'],a:2},
+    {t:'mcq',q:`When applying ${TOPIC} to large datasets, which preprocessing step is mandatory?`,
+     o:['Data encryption','Input normalisation and validation','Colour coding','Font selection'],a:1},
+    {t:'mcq',q:`Which exam historically features ${TOPIC} most frequently?`,
+     o:['JEE Main','GATE','CAT','UPSC'],a:1},
+    {t:'mcq',q:`Which of these is NOT a valid optimisation for ${TOPIC}?`,
+     o:['Memoisation','Dynamic programming','Busy waiting','Greedy selection'],a:2},
+    {t:'mcq',q:`Optimal divide-and-conquer time complexity for ${TOPIC}:`,
+     o:['O(n)','O(n log n)','O(n²)','O(log n)'],a:1},
+    {t:'mcq',q:`Application-level questions in a ${TOPIC} exam typically make up:`,
+     o:['10%','30%','60%','90%'],a:2},
+    {t:'msq',q:`Select ALL valid real-world applications of ${TOPIC}: (Multiple correct)`,
+     o:['Database optimisation','Signal processing','Game AI pathfinding','Social media styling','Network routing'],a:[0,1,2,4]},
+    {t:'msq',q:`Which characteristics define an efficient ${TOPIC} implementation? (Select all)`,
+     o:['Low memory footprint','Correct for all valid inputs','Handles all edge cases','Requires internet','Deterministic results'],a:[0,1,2,4]},
+    {t:'msq',q:`Causes of performance degradation in ${TOPIC}? (Select all that apply)`,
+     o:['Unsorted input (when sorted assumed)','Integer overflow','Descriptive variable names','Missing recursion base case','Memory leak'],a:[0,1,3,4]},
+    {t:'msq',q:`[PYQ] Which concepts are most frequently tested alongside ${TOPIC}?`,
+     o:['Recursion','Dynamic programming','Colour theory','Graph algorithms','Time–space trade-offs'],a:[0,1,3,4]},
+    {t:'msq',q:`[Case Study] Which failure modes affect distributed ${TOPIC} systems? (Select all)`,
+     o:['Network partition / split-brain','Clock skew → ordering issues','Wrong font rendering','Memory pressure → evictions','Consensus failure'],a:[0,1,3,4]},
+    {t:'text',q:`Explain why ${TOPIC} is considered fundamental. Include its theoretical basis and two real-world applications.`},
+    {t:'text',q:`A student's ${TOPIC} implementation passes all tests but fails in production with 1M records. Diagnose and fix.`},
+    {t:'text',q:`[Case Study] An e-commerce platform applies ${TOPIC} to its recommendation engine. Describe the pipeline and key decisions.`},
+    {t:'text',q:`Compare ${TOPIC} with its closest alternative. When would you choose each?`},
+    {t:'text',q:`Sketch a correctness proof for ${TOPIC} using mathematical induction.`},
+  ];
+
+  const shuffled = [...bank].sort(() => Math.random() - .5);
+  const result = [];
+  while (result.length < COUNT) result.push(...shuffled);
+  return result.slice(0, COUNT).map((q, i) => ({
+    ...q, idx: i,
+    diff: diffCycle[i % diffCycle.length],
+  }));
+}
+const QS = buildQuestions();
+
+function getUserPlan() {
+  try {
+    const s = localStorage.getItem('nb_session');
+    return s ? (JSON.parse(s).plan || 'free') : 'guest';
+  } catch (e) {
+    return 'guest';
+  }
+}
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded', () => {
+  const plan = getUserPlan();
+  const hasAccess = plan === 'free-premium' || plan === 'diamond';
+
+  if (!hasAccess) {
+    const mainArea = document.querySelector('.mk-main') || document.body;
+    mainArea.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;padding:32px;text-align:center;">
+        <div style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:8px 16px;font-family:var(--font-mono);font-size:12px;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px;">
+          PREMIUM MODULE • MOCK EXAMINATIONS
+        </div>
+        <h1 style="font-family:var(--font-heading);font-size:2rem;font-weight:700;margin-bottom:12px;color:var(--text);">
+          Mock Exam Suite Locked
+        </h1>
+        <p style="color:var(--muted);max-width:540px;line-height:1.6;font-size:0.95rem;margin-bottom:28px;">
+          Timed examination simulations, negative marking, section analytics, and automated score reports require a Scholar Pro or Diamond plan.
+        </p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+          <a href="index.html" class="mk-btn primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+            Upgrade With Scholar Pro
+          </a>
+          <a href="index.html" class="mk-btn ghost" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+            Return to Dashboard
+          </a>
+        </div>
+      </div>
+    `;
+    const sb = document.querySelector('.mk-sidebar');
+    if (sb) sb.style.display = 'none';
+    return;
+  }
+
+  document.getElementById('hdr-topic').textContent  = TOPIC + ' · ' + SYL;
+  document.getElementById('prog-tot').textContent   = COUNT;
+  document.getElementById('sb-sub').textContent     = `${COUNT} Qs · ${DIFF} · ${SYL}`;
+  buildSidebar();
+  renderQ(0);
+  startTimer();
+});
+
+/* ══ TIMER ══ */
+function startTimer() {
+  refreshTimer();
+  timerTick = setInterval(() => {
+    timeLeft--;
+    refreshTimer();
+    if (timeLeft <= 0) { clearInterval(timerTick); autoSubmit(); }
+  }, 1000);
+}
+
+function refreshTimer() {
+  const frac = Math.max(0, timeLeft / TOTAL_SECS);
+  const mins  = Math.floor(timeLeft / 60);
+  const secs  = timeLeft % 60;
+  const cls   = timeLeft < 60 ? 'danger' : timeLeft < 300 ? 'warn' : '';
+
+  /* Text */
+  const valEl = document.getElementById('timer-val');
+  if (valEl) valEl.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+
+  /* Percentage inside ring */
+  const pctEl = document.getElementById('timer-pct');
+  if (pctEl) pctEl.textContent = Math.ceil(frac * 100) + '%';
+
+  /* SVG arc — stroke-dashoffset: 0 = full circle, ARC_C = empty */
+  const arcEl = document.getElementById('timer-arc');
+  if (arcEl) arcEl.style.strokeDashoffset = ARC_C * (1 - frac);
+
+  /* Wrapper class */
+  const wrap = document.getElementById('mk-timer');
+  if (wrap) wrap.className = 'mk-timer-wrap' + (cls ? ' ' + cls : '');
+
+  /* Full-width bar */
+  const bar = document.getElementById('timebar-fill');
+  if (bar) {
+    bar.style.width = (frac * 100) + '%';
+    bar.className   = 'mk-timebar-fill' + (cls ? ' ' + cls : '');
+  }
+}
+
+function autoSubmit() {
+  showToast('Time up! Auto-submitting…');
+  setTimeout(doSubmit, 1600);
+}
+
+/* ══ SIDEBAR ══ */
+function buildSidebar() {
+  const list = document.getElementById('mk-qlist');
+  list.innerHTML = '';
+  QS.forEach((_, i) => {
+    const el = document.createElement('div');
+    el.className   = 'mk-qnum' + (i === 0 ? ' current' : ' unanswered');
+    el.textContent = i + 1;
+    el.id          = 'qn' + i;
+    el.onclick     = () => goTo(i);
+    list.appendChild(el);
+  });
+}
+
+function refreshSidebar() {
+  let ans = 0, mk = 0, livePos = 0, liveNeg = 0;
+  QS.forEach((q, i) => {
+    const el = document.getElementById('qn' + i);
+    if (!el) return;
+    el.className = 'mk-qnum';
+    if (i === currentQ)                el.classList.add('current');
+    else if (marked[i])               el.classList.add('marked');
+    else if (answers[i] !== undefined) el.classList.add('answered');
+    else                               el.classList.add('unanswered');
+    if (answers[i] !== undefined) ans++;
+    if (marked[i]) mk++;
+
+    /* Live score preview */
+    const a = answers[i];
+    if (a !== undefined) {
+      if (q.t === 'mcq') { if (a === q.a) livePos += 4; else liveNeg += 1; }
+      if (q.t === 'msq') {
+        const ok = JSON.stringify([...(Array.isArray(a)?a:[])].sort()) === JSON.stringify([...q.a].sort());
+        if (ok) livePos += 4;
+        else if (Array.isArray(a) && a.some(x=>q.a.includes(x)) && !a.some(x=>!q.a.includes(x))) livePos += 2;
+        else liveNeg += 2;
+      }
+    }
+  });
+
+  document.getElementById('p-ans').textContent       = ans;
+  document.getElementById('p-unattempt').textContent = COUNT - ans;
+  document.getElementById('p-mark').textContent      = mk;
+  document.getElementById('prog-bar').style.width    = Math.round(ans / COUNT * 100) + '%';
+  const posEl = document.getElementById('live-pos');
+  const negEl = document.getElementById('live-neg');
+  if (posEl) posEl.textContent = livePos;
+  if (negEl) negEl.textContent = liveNeg;
+}
+
+/* ══ RENDER QUESTION ══ */
+const LETTERS = ['A','B','C','D','E'];
+function renderQ(i) {
+  const q    = QS[i];
+  const area = document.getElementById('q-area');
+  document.getElementById('prog-cur').textContent = i + 1;
+
+  const tLbl = {mcq:'Single Correct (MCQ)', msq:'Multi Select (MSQ)', text:'Descriptive (Text)'}[q.t];
+  const tCls = {mcq:'t-mcq', msq:'t-msq', text:'t-txt'}[q.t];
+  const mStr = {mcq:'<span style="color:var(--green)">+4</span> / <span style="color:var(--red)">−1</span>',
+                msq:'<span style="color:var(--green)">+4/+2</span> / <span style="color:var(--red)">−2</span>',
+                text:'<span style="color:var(--green)">+3</span>'}[q.t];
+  const dCls = {easy:'d-easy',Easy:'d-easy',medium:'d-medium',Medium:'d-medium',hard:'d-hard',Hard:'d-hard'}[q.diff] || 'd-medium';
+
+  let body = '';
+  if (q.t === 'mcq') {
+    body = `<div class="mk-opts">`
+      + q.o.map((opt, oi) => `
+        <div class="mk-opt ${answers[i]===oi?'sel':''}" onclick="pickMCQ(${i},${oi})">
+          <div class="mk-opt-key">${answers[i]===oi?'✓':LETTERS[oi]}</div>
+          <div class="mk-opt-text">${opt}</div>
+        </div>`).join('') + `</div>`;
+  } else if (q.t === 'msq') {
+    const sel = Array.isArray(answers[i]) ? answers[i] : [];
+    body = `<div class="mk-msq-note">☑ Select ALL correct options — partial marks apply</div>
+      <div class="mk-opts">`
+      + q.o.map((opt, oi) => `
+        <div class="mk-opt ${sel.includes(oi)?'msq-sel':''}" onclick="pickMSQ(${i},${oi})">
+          <div class="mk-opt-key">${sel.includes(oi)?'✓':LETTERS[oi]}</div>
+          <div class="mk-opt-text">${opt}</div>
+        </div>`).join('') + `</div>`;
+  } else {
+    body = `<textarea class="mk-textarea" id="ta${i}"
+      placeholder="Write your answer here…"
+      oninput="saveText(${i},this.value)"
+      rows="5">${answers[i]||''}</textarea>`;
+  }
+
+  const isLast = i === COUNT - 1;
+  area.innerHTML = `
+    <div class="mk-qcard">
+      <div class="mk-q-meta">
+        <span class="mk-qnum-badge">Q ${i+1} / ${COUNT}</span>
+        <span class="mk-type-badge ${tCls}">${tLbl}</span>
+        <span class="mk-diff-badge ${dCls}">${q.diff}</span>
+        <span class="mk-marks">Marks: ${mStr}</span>
+      </div>
+      <div class="mk-qtext">${q.q}</div>
+      ${body}
+    </div>
+    <div class="mk-action-bar">
+      <button class="mk-btn primary" onclick="saveNext(${i})">${isLast ? '✓ Submit Test' : 'Save &amp; Next →'}</button>
+      <button class="mk-btn mark" onclick="toggleMark(${i})">${marked[i]?'★ Marked':'☆ Mark for Review'}</button>
+      ${answers[i]!==undefined?`<button class="mk-btn clear" onclick="clearAns(${i})">Clear</button>`:''}
+      ${i>0?`<button class="mk-btn ghost" onclick="goTo(${i-1})">← Prev</button>`:''}
+    </div>`;
+
+  refreshSidebar();
+}
+
+/* ══ INTERACTIONS ══ */
+function goTo(i)      { if (!submitted) { currentQ=i; renderQ(i); } }
+function saveNext(i)  { if (i < COUNT-1) goTo(i+1); else confirmSubmit(); }
+
+function pickMCQ(qi, oi) {
+  answers[qi] = oi;
+  document.querySelectorAll('.mk-opt').forEach((el, j) => {
+    el.classList.toggle('sel', j === oi);
+    el.querySelector('.mk-opt-key').textContent = j===oi ? '✓' : LETTERS[j];
+  });
+  refreshSidebar();
+}
+
+function pickMSQ(qi, oi) {
+  if (!Array.isArray(answers[qi])) answers[qi] = [];
+  const idx = answers[qi].indexOf(oi);
+  idx === -1 ? answers[qi].push(oi) : answers[qi].splice(idx, 1);
+  if (!answers[qi].length) delete answers[qi];
+  renderQ(qi);
+}
+
+function saveText(qi, val) {
+  if (val.trim()) answers[qi] = val; else delete answers[qi];
+  refreshSidebar();
+}
+
+function toggleMark(i) {
+  marked[i] = !marked[i];
+  if (!marked[i]) delete marked[i];
+  renderQ(i);
+}
+
+function clearAns(i) { delete answers[i]; renderQ(i); }
+
+/* ══ SUBMIT FLOW ══ */
+function confirmSubmit() {
+  const ua = COUNT - Object.keys(answers).length;
+  const msg = ua > 0 ? `${ua} question${ua>1?'s are':' is'} unanswered. Submit anyway?` : 'Submit the Mock Test now?';
+  if (confirm(msg)) doSubmit();
+}
+
+function exitTest() {
+  if (submitted || confirm('Exit? Your progress will be lost.')) location.href = 'index.html';
+}
+
+function doSubmit() {
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerTick);
+
+  /* ── Grade ── */
+  let score=0, correct=0, wrong=0, partial=0, unattempted=0;
+  QS.forEach((q, i) => {
+    const a = answers[i];
+    if (a === undefined || a === '' || (Array.isArray(a) && !a.length)) { unattempted++; return; }
+    if (q.t === 'mcq') {
+      if (a === q.a) { score+=4; correct++; } else { score-=1; wrong++; }
+    }
+    if (q.t === 'msq') {
+      const selS = JSON.stringify([...(a||[])].sort());
+      const corS = JSON.stringify([...(q.a||[])].sort());
+      if (selS === corS) { score+=4; correct++; }
+      else if (Array.isArray(a) && a.length && a.every(x=>q.a.includes(x))) { score+=2; partial++; }
+      else { score-=2; wrong++; }
+    }
+    if (q.t === 'text') {
+      if (String(a).trim().length >= 20) { score+=3; correct++; } else unattempted++;
+    }
+  });
+
+  const maxScore   = COUNT * 4;
+  const pct        = Math.max(0, Math.round(score / maxScore * 100));
+  const timeTaken  = TOTAL_SECS - Math.max(0, timeLeft);
+  const timeRemain = Math.max(0, timeLeft);
+  const tM=Math.floor(timeTaken/60), tS=timeTaken%60;
+  const lM=Math.floor(timeRemain/60), lS=timeRemain%60;
+  const avgSec = Math.round(timeTaken / COUNT);
+  const usedPct = Math.round(timeTaken / TOTAL_SECS * 100);
+  const accuracy = correct+wrong > 0 ? Math.round(correct/(correct+wrong)*100) : 0;
+
+  /* ── Save history ── */
+  try {
+    const hist = JSON.parse(localStorage.getItem('nb_mock_history')||'[]');
+    hist.unshift({topic:TOPIC,syl:SYL,diff:DIFF,count:COUNT,score,maxScore,pct,correct,wrong,partial,unattempted,timeTaken,timeRemain,type:'Mock Test',date:new Date().toISOString()});
+    localStorage.setItem('nb_mock_history', JSON.stringify(hist.slice(0,50)));
+  } catch(e){}
+
+  /* ── UI ── */
+  document.getElementById('q-area').innerHTML = '';
+  document.getElementById('prog-bar').style.width = '100%';
+  const cbar = document.getElementById('timebar-fill');
+  if (cbar) { cbar.style.transition='none'; cbar.style.width='100%'; cbar.style.background='var(--green)'; }
+
+  const res = document.getElementById('results-area');
+  res.classList.add('show');
+
+  const grade       = pct>=90?'Excellent!':pct>=70?'Good Job!':pct>=50?'Keep Practising':'Don\'t Give Up!';
+  const scoreColor  = score > 0 ? 'var(--green)' : 'var(--red)';
+  const ringColor   = pct>=70?'var(--green)':pct>=50?'var(--warn)':'var(--red)';
+  const CIRC        = 2 * Math.PI * 54;
+  const dashOffset  = CIRC * (1 - pct/100);
+
+  res.innerHTML = `
+    <!-- Hero -->
+    <div class="res-hero">
+      <div class="res-emoji">${pct>=70?'Great':pct>=50?'Good':'Needd Work'}</div>
+      <div class="res-grade">${grade}</div>
+      <div class="res-subtitle">${TOPIC} · ${SYL} · ${DIFF.charAt(0).toUpperCase()+DIFF.slice(1)} · ⏱ ${(TIMER_PER_Q/60).toFixed(1).replace('.0','')} min/Q</div>
+    </div>
+
+    <!-- Score ring -->
+    <div class="res-ring-wrap">
+      <svg width="160" height="160" viewBox="0 0 160 160" style="display:block;transform:rotate(-90deg)">
+        <circle class="rr-bg"  cx="80" cy="80" r="54"/>
+        <circle class="rr-arc" cx="80" cy="80" r="54"
+          stroke="${ringColor}" stroke-dasharray="${CIRC.toFixed(2)}" stroke-dashoffset="${CIRC.toFixed(2)}"/>
+      </svg>
+      <div class="res-ring-inner">
+        <div class="res-ring-pct" style="color:${ringColor}" id="res-ring-pct">0%</div>
+        <div class="res-ring-lbl">Accuracy</div>
+      </div>
+    </div>
+    <div class="res-score-line">${score>0?'+':''}${score} marks out of ${maxScore} maximum</div>
+
+    <!-- Timer cards -->
+    <div class="res-timer-grid">
+      <div class="res-tc blue">
+        <div class="res-tc-icon">⏱</div>
+        <div class="res-tc-num" style="color:var(--accent)">${tM}m ${String(tS).padStart(2,'0')}s</div>
+        <div class="res-tc-lbl">TIME TAKEN</div>
+      </div>
+      <div class="res-tc green">
+        <div class="res-tc-icon"></div>
+        <div class="res-tc-num" style="color:var(--green)">${lM}m ${String(lS).padStart(2,'0')}s</div>
+        <div class="res-tc-lbl">TIME REMAINING</div>
+      </div>
+      <div class="res-tc">
+        <div class="res-tc-icon"></div>
+        <div class="res-tc-num">${avgSec}s</div>
+        <div class="res-tc-lbl">AVG PER QUESTION</div>
+      </div>
+    </div>
+
+    <!-- Timer bar -->
+    <div class="res-tbar-card">
+      <div class="res-tbar-head">
+        <div class="res-tbar-lbl">⏱ Time usage — ${(TIMER_PER_Q/60).toFixed(1).replace('.0','')} min/Q · ${Math.floor(TOTAL_SECS/60)} min total allotted</div>
+        <div class="res-tbar-val">${usedPct}% used</div>
+      </div>
+      <div class="res-tbar-track">
+        <div class="res-tbar-fill" style="width:${usedPct}%"></div>
+      </div>
+      <div class="res-tbar-foot">
+        <span>0:00</span>
+        <span>Used: ${tM}m ${String(tS).padStart(2,'0')}s</span>
+        <span>${Math.floor(TOTAL_SECS/60)}:00</span>
+      </div>
+    </div>
+
+    <!-- Stats grid -->
+    <div class="res-stats">
+      <div class="res-stat"><div class="res-stat-n" style="color:var(--green)">${correct}</div><div class="res-stat-l">CORRECT</div></div>
+      <div class="res-stat"><div class="res-stat-n" style="color:var(--red)">${wrong}</div><div class="res-stat-l">WRONG</div></div>
+      <div class="res-stat"><div class="res-stat-n" style="color:var(--warn)">${partial}</div><div class="res-stat-l">PARTIAL</div></div>
+      <div class="res-stat"><div class="res-stat-n" style="color:var(--muted)">${unattempted}</div><div class="res-stat-l">UNATTEMPTED</div></div>
+    </div>
+
+    <div class="res-divider"><div class="res-div-line"></div><div class="res-div-lbl">SCORE BREAKDOWN</div><div class="res-div-line"></div></div>
+
+    <div class="res-breakdown">
+      <div class="res-bk">
+        <div class="res-bk-title">Raw Score</div>
+        <div class="res-bk-row" style="color:var(--green)">Correct &nbsp;&nbsp;&nbsp; +${correct*4}</div>
+        <div class="res-bk-row" style="color:var(--red)">Wrong &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; −${wrong}</div>
+        <div class="res-bk-row" style="color:var(--warn)">Partial &nbsp;&nbsp;&nbsp;&nbsp; +${partial*2}</div>
+        <div class="res-bk-row" style="color:${scoreColor};margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">Net Total &nbsp; ${score>0?'+':''}${score}</div>
+      </div>
+      <div class="res-bk">
+        <div class="res-bk-title">Performance</div>
+        <div class="res-bk-row">Accuracy: ${accuracy}%</div>
+        <div class="res-bk-row">Avg time / Q: ${avgSec}s</div>
+        <div class="res-bk-row">Questions: ${COUNT}</div>
+        <div class="res-bk-row" style="color:${pct>=50?'var(--green)':'var(--red)'};margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${pct>=70?'Strong performance':pct>=50?'Approaching pass ↑':'Review topics'}</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="res-actions">
+      <button class="mk-btn primary" onclick="location.reload()">Retry</button>
+      <a class="mk-btn ghost" href="user.html">My Profile</a>
+      <a class="mk-btn ghost" href="index.html">Home</a>
+    </div>`;
+
+  /* Animate ring after render */
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const arc = res.querySelector('.rr-arc');
+      if (arc) arc.style.strokeDashoffset = dashOffset;
+      const pctEl = document.getElementById('res-ring-pct');
+      if (pctEl) {
+        let cur = 0;
+        const step = setInterval(() => {
+          cur = Math.min(cur + 2, pct);
+          pctEl.textContent = cur + '%';
+          if (cur >= pct) clearInterval(step);
+        }, 28);
+      }
+    });
+  });
+}
+
+/* ── Toast ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.lucide) { lucide.createIcons(); }
+});
+</script>
+</body>
+</html>

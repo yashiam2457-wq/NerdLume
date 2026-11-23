@@ -1,0 +1,11 @@
+{
+  "name": "nerdlume-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend scaffold for NerdLume",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}

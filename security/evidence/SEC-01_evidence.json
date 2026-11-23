@@ -1,0 +1,18 @@
+{
+  "test_id": "TC-A01",
+  "description": "Arbitrary sensitive file access allowed via serve_static",
+  "tested_paths": [
+    "/.env",
+    "/backend/.env",
+    "/backend/server.py",
+    "/backend/data/nerdybro.sqlite3"
+  ],
+  "exposed_paths": [
+    "/.env",
+    "/backend/.env",
+    "/backend/server.py",
+    "/backend/data/nerdybro.sqlite3"
+  ],
+  "vulnerable": true,
+  "sample_stat": "Target .env file exists and is accessible: ['/.env', '/backend/.env', '/backend/server.py', '/backend/data/nerdybro.sqlite3']"
+}

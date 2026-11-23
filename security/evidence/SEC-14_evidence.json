@@ -1,0 +1,5 @@
+{
+  "test_id": "TC-C02",
+  "description": "server._rate_counters grows indefinitely with distinct IPs without cleanup",
+  "vulnerable": true
+}

@@ -1,0 +1,6 @@
+{
+  "test_id": "TC-C01",
+  "description": "test_prompt_debug.py assumes Note Making weekly limit is 3, while PLAN_CONFIG sets 5",
+  "vulnerable": false,
+  "quality_issue": true
+}

@@ -1,0 +1,5 @@
+{
+  "test_id": "TC-A01",
+  "description": "serve_static does not enforce strict extension whitelist",
+  "vulnerable": true
+}

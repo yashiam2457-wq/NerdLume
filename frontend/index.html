@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NerdLume — AI-Powered Smart Study & Learning Platform</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="NerdLume_Symbol.svg">
+  <link rel="apple-touch-icon" href="NerdLume_Symbol.jpg">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Righteous&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+  <!-- Interactive High-Velocity Cybernetic Background Canvas -->
+  <canvas id="bg-canvas" class="bg-canvas"></canvas>
+
+  <!-- Avara Ambient Dynamic Animated Background -->
+  <div class="avara-bg-glow">
+    <div class="avara-orb avara-orb-1"></div>
+    <div class="avara-orb avara-orb-2"></div>
+    <div class="avara-orb avara-orb-3"></div>
+  </div>
+  <div class="noise"></div>
+
+  <!-- Top Title Bar -->
+  <div class="top-title-bar">
+    <span>◈ NERDLUME — AI-POWERED SMART LEARNING PLATFORM</span>
+  </div>
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header>
+    <a href="index.html" class="logo">
+      <div class="logo-icon">
+        <img src="NerdLume_Symbol.svg" alt="NerdLume" class="logo-img">
+      </div>
+      <span class="logo-text">Nerd<span>Lume</span></span>
+    </a>
+    <!-- Auth.js replaces this with user badge or auth buttons -->
+    <div class="header-badge">BETA v0.1</div>
+  </header>
+
+  <main>
+
+    <!-- ── Hero ── -->
+    <div class="hero">
+      <div class="hero-brand">
+        <div class="logo-icon hero-logo-icon">
+          <img src="NerdLume_Symbol.svg" alt="NerdLume" class="logo-img">
+        </div>
+        <span class="hero-brand-text">Nerd<span>Lume</span></span>
+      </div>
+      <div class="hero-tag">AI-Powered Learning Engine</div>
+      <h1>STUDY <em>SMARTER,</em><br>NOT <em>HARDER.</em></h1>
+      <p>Paste your syllabus, upload your files — let NerdLume generate notes, quizzes, assignments, and practicals in
+        seconds.</p>
+    </div>
+
+    <!-- ── Plan Promo Bar (Dynamic based on user plan, hidden for Diamond) ── -->
+    <div id="promo-bar"
+      style="display:none; margin-bottom:24px; padding:14px 20px; border-radius:14px; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; animation: fadeUp 0.5s ease both;">
+    </div>
+
+    <!-- ── Mode Tabs ── -->
+    <div class="mode-tabs">
+      <button class="tab-btn active" onclick="switchMode('learning', this)">
+        <span></span> Learning Mode
+      </button>
+      <button class="tab-btn" onclick="switchMode('quick', this)">
+        <span></span> Quick Mode
+      </button>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════
+       LEARNING MODE
+  ══════════════════════════════════════════ -->
+    <div class="mode-panel active" id="mode-learning">
+
+      <!-- Card 01 — Input -->
+      <div class="card">
+        <div class="card-label">01 — Input</div>
+        <div class="card-title">Topic / Syllabus / Subject Content</div>
+        <textarea class="topic-input" id="learning-input" autocomplete="off"
+          placeholder="Enter study topic, chapter title, or syllabus contents..."></textarea>
+
+        <div class="upload-row">
+          <div class="card-title" style="margin-bottom:0; font-size:0.88rem;">File Upload</div>
+          <span class="optional-badge">Optional</span>
+        </div>
+        <div class="info-tag">Upload files for analysis &amp; summarization — text input is sufficient for generation
+        </div>
+
+        <div class="file-zone" id="learning-dropzone" ondragover="handleDrag(event, this)"
+          ondragleave="handleDragLeave(event, this)" ondrop="handleDrop(event, this, 'learning-files')">
+          <input type="file" id="learning-file-input" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xlsx,.xls,.txt,.csv"
+            onchange="handleFileInput(event, 'learning-files')">
+          <div class="file-icon"><i data-lucide="upload-cloud" style="width:28px;height:28px;color:var(--accent);"></i>
+          </div>
+          <p><strong>Drop files here</strong> or click to browse</p>
+          <div class="file-types">
+            <span class="file-type-tag">PDF</span>
+            <span class="file-type-tag">DOCX</span>
+            <span class="file-type-tag">PPT</span>
+            <span class="file-type-tag">XLSX</span>
+            <span class="file-type-tag">TXT</span>
+            <span class="file-type-tag">CSV</span>
+          </div>
+        </div>
+        <div class="uploaded-files" id="learning-files"></div>
+      </div>
+
+      <!-- Card 02 — Goal -->
+      <div class="card">
+        <div class="card-label">02 — Goal</div>
+        <div class="card-title">What do you want to do?</div>
+
+        <!-- Goal Selector Cards -->
+        <div class="mode-selector">
+          <div class="mode-card selected" id="goal-notes" onclick="selectGoal('notes')">
+            <div class="mode-card-title">Note Making</div>
+            <div class="mode-card-desc">Generate structured notes from your syllabus or topics</div>
+          </div>
+          <div class="mode-card" id="goal-practice" onclick="selectGoal('practice')">
+            <div class="mode-card-title">Practice</div>
+            <div class="mode-card-desc">Quiz yourself with questions and flashcards</div>
+          </div>
+          <div class="mode-card" id="goal-explain" onclick="selectGoal('explain')"
+            style="border-color: rgba(255,107,87,0.3);">
+            <div class="mode-card-title">Explain Mode</div>
+            <div class="mode-card-desc">Deep explanations — numericals, theory, code &amp; examples</div>
+          </div>
+        </div>
+
+        <!-- ── Sub Panel: Notes ── -->
+        <div class="sub-panel active" id="panel-notes">
+          <div class="divider"></div>
+          <div class="flex-row">
+            <div class="flex-col">
+              <div class="section-heading"><span class="accent">Note Style</span></div>
+              <button class="option-btn selected" onclick="toggleOption(this, 'note-style')"><span
+                  class="option-dot"></span> Cornell Method</button>
+              <button class="option-btn" onclick="toggleOption(this, 'note-style')"><span class="option-dot"></span>
+                Mind Map Style</button>
+              <button class="option-btn" onclick="toggleOption(this, 'note-style')"><span class="option-dot"></span>
+                Outline Method</button>
+              <button class="option-btn" onclick="toggleOption(this, 'note-style')"><span class="option-dot"></span>
+                Charting Method</button>
+              <button class="option-btn" onclick="toggleOption(this, 'note-style')"><span class="option-dot"></span>
+                Boxing / Modular</button>
+            </div>
+            <div class="flex-col">
+              <div class="section-heading"><span class="accent">Technique</span></div>
+              <button class="option-btn selected" onclick="selectNoteTech(this, false)"><span class="option-dot"></span>
+                Active Recall</button>
+              <button class="option-btn" onclick="selectNoteTech(this, false)"><span class="option-dot"></span> Spaced
+                Repetition</button>
+              <button class="option-btn" onclick="selectNoteTech(this, false)"><span class="option-dot"></span> Feynman
+                Technique</button>
+              <button class="option-btn" onclick="selectNoteTech(this, false)"><span class="option-dot"></span> SQ3R
+                Method</button>
+              <button class="option-btn" onclick="selectNoteTech(this, false)"><span class="option-dot"></span> Concept
+                Mapping</button>
+              <!-- Video Notes button hidden until backend integration is ready -->
+              <button class="option-btn vn-tech-btn" onclick="selectNoteTech(this, true)"
+                style="display:none !important;">
+                <span class="option-dot"></span>
+                <span>Video Notes</span>
+                <span class="vn-new-tag">NEW</span>
+              </button>
+            </div>
+            <div class="flex-col">
+              <div class="section-heading"><span class="accent">Generation Type</span></div>
+              <button class="option-btn selected" onclick="toggleOption(this, 'gen-type')"><span
+                  class="option-dot"></span> Theory Only</button>
+              <button class="option-btn" onclick="toggleOption(this, 'gen-type')"><span class="option-dot"></span>
+                Numericals Only</button>
+              <button class="option-btn" onclick="toggleOption(this, 'gen-type')"><span class="option-dot"></span>
+                Theory + Numericals</button>
+              <button class="option-btn" onclick="toggleOption(this, 'gen-type')"><span class="option-dot"></span>
+                Programs / Code</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-heading">
+            <span class="accent">Content Additions</span>
+            <small
+              style="font-size:0.65rem;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400;">(multi-select)</small>
+          </div>
+          <div class="options-3col">
+            <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Generated
+              Text</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> ASCII
+              Diagrams</button>
+            <button class="option-btn" id="btn-data-graphs" onclick="onDataGraphsClick(this)"><span
+                class="option-dot"></span> Data Graphs (CSV/XLSX)</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Summarize Uploaded
+              Files</button>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-heading">
+            <span class="accent">Output File Format</span>
+          </div>
+          <div class="options-3col">
+            <button class="option-btn selected" onclick="toggleOption(this, 'note-file-fmt')"><span
+                class="option-dot"></span> Markdown (.md)</button>
+            <button class="option-btn" onclick="toggleOption(this, 'note-file-fmt')"><span class="option-dot"></span>
+              Text Document (.txt)</button>
+            <button class="option-btn" onclick="toggleOption(this, 'note-file-fmt')"><span class="option-dot"></span>
+              Word Document (.docx)</button>
+          </div>
+
+          <!-- ══ VIDEO NOTES PANEL (Hidden until backend is ready) ══ -->
+          <div id="video-notes-panel" class="vn-panel" style="display:none !important;">
+
+            <div class="vn-divider-row">
+              <div class="vn-divider-line"></div>
+              <div class="vn-divider-label">Video Notes Settings</div>
+              <div class="vn-divider-line"></div>
+            </div>
+
+            <!-- Header -->
+            <div class="vn-header-strip">
+              <div class="vn-header-left">
+                <div class="vn-header-icon"><i data-lucide="video"
+                    style="width:20px;height:20px;color:var(--accent);"></i></div>
+                <div>
+                  <div class="vn-header-title">Video Notes</div>
+                  <div class="vn-header-sub">Generate timestamped notes &amp; screenshot frames from any YouTube video
+                  </div>
+                </div>
+              </div>
+              <div class="vn-badge-premium">Premium</div>
+            </div>
+
+            <!-- ── YouTube URL Input Block ── -->
+            <div class="vn-url-block">
+              <div class="vn-url-block-label">
+                <svg class="vn-yt-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
+                    fill="#FF0000" />
+                </svg>
+                YouTube Video URL
+              </div>
+
+              <div class="vn-input-row">
+                <input type="url" id="yt-url-input" class="vn-url-input"
+                  placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" oninput="handleYtUrl(this.value)"
+                  autocomplete="off" spellcheck="false">
+                <button class="vn-clear-btn" id="vn-clear-btn" title="Clear URL" onclick="clearYtUrl()"
+                  style="display:none;" aria-label="Clear URL"><i data-lucide="x"
+                    style="width:14px;height:14px;"></i></button>
+              </div>
+
+              <div class="vn-url-hints">
+                <span class="vn-hint-tag">youtube.com/watch?v=</span>
+                <span class="vn-hint-tag">youtu.be/</span>
+                <span class="vn-hint-tag">youtube.com/shorts/</span>
+              </div>
+
+              <!-- Preview card — shown when valid URL -->
+              <div class="vn-preview-card" id="vn-preview-card" style="display:none;">
+                <div class="vn-preview-thumb-wrap">
+                  <img class="vn-preview-thumb" id="vn-preview-thumb" src="" alt="Thumbnail">
+                  <div class="vn-thumb-play"></div>
+                </div>
+                <div class="vn-preview-meta">
+                  <div class="vn-preview-vid-id" id="vn-preview-vid-id"></div>
+                  <div class="vn-preview-status">
+                    <span class="vn-status-dot"></span>
+                    Valid YouTube video detected
+                  </div>
+                  <div class="vn-preview-note">Thumbnail &amp; frames will be extracted on generation</div>
+                </div>
+              </div>
+
+              <!-- Error -->
+              <div class="vn-url-error" id="vn-url-error" style="display:none;">
+                Enter a valid YouTube URL to continue
+              </div>
+            </div>
+
+            <!-- ── Options Row ── -->
+            <div class="vn-options-grid">
+
+              <div class="vn-opt-col">
+                <div class="vn-opt-label">Screenshot Frequency</div>
+                <button class="option-btn selected" onclick="toggleOption(this,'ss-freq')"><span
+                    class="option-dot"></span> At key concepts</button>
+                <button class="option-btn" onclick="toggleOption(this,'ss-freq')"><span class="option-dot"></span> Every
+                  2 minutes</button>
+                <button class="option-btn" onclick="toggleOption(this,'ss-freq')"><span class="option-dot"></span> Every
+                  5 minutes</button>
+                <button class="option-btn" onclick="toggleOption(this,'ss-freq')"><span class="option-dot"></span>
+                  Slides / diagrams only</button>
+              </div>
+
+              <div class="vn-opt-col">
+                <div class="vn-opt-label">Include in Output</div>
+                <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Frame
+                  thumbnails</button>
+                <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span>
+                  Timestamps per frame</button>
+                <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Key
+                  transcript lines</button>
+                <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Chapter
+                  markers</button>
+                <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> On-screen text
+                  (OCR)</button>
+              </div>
+
+              <div class="vn-opt-col">
+                <div class="vn-opt-label">Note Format</div>
+                <button class="option-btn selected" onclick="toggleOption(this,'vn-format')"><span
+                    class="option-dot"></span> Timeline + Frames</button>
+                <button class="option-btn" onclick="toggleOption(this,'vn-format')"><span class="option-dot"></span>
+                  Summary + Screenshots</button>
+                <button class="option-btn" onclick="toggleOption(this,'vn-format')"><span class="option-dot"></span>
+                  Cornell + Frames</button>
+                <button class="option-btn" onclick="toggleOption(this,'vn-format')"><span class="option-dot"></span>
+                  Flashcard from video</button>
+              </div>
+
+            </div><!-- /vn-options-grid -->
+
+          </div><!-- /vn-panel -->
+
+        </div><!-- /panel-notes -->
+
+        <!-- ── Sub Panel: Practice ── -->
+        <div class="sub-panel" id="panel-practice">
+          <div class="divider"></div>
+          <div class="section-heading"><span class="accent">Practice Mode</span></div>
+
+          <!-- Mode selector cards -->
+          <div class="pmode-grid">
+            <div class="pmode-card pmc-quiz selected" id="pmc-quiz" onclick="selectPracticeMode('quiz',this)">
+              <div class="pmc-name">Quiz</div>
+              <div class="pmc-desc">MCQ, MSQ &amp; text input — instant feedback</div>
+            </div>
+            <div class="pmode-card pmc-mock" id="pmc-mock" onclick="selectPracticeMode('mock',this)">
+              <div class="pmc-name">Mock Test</div>
+              <div class="pmc-desc">Timed exam with negative marking &amp; score report</div>
+            </div>
+            <div class="pmode-card pmc-flash" id="pmc-flash" onclick="selectPracticeMode('flash',this)">
+              <div class="pmc-name">Flash Cards</div>
+              <div class="pmc-desc">Flip cards — reveal answers with slide navigation</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Config row -->
+          <div class="pconfig-row">
+            <div class="pcol">
+              <div class="section-heading"><span class="accent">Syllabus</span></div>
+              <button class="option-btn selected" onclick="toggleOption(this,'syl-mode');updateLaunchInfo()"><span
+                  class="option-dot"></span>Full Syllabus</button>
+              <button class="option-btn" onclick="toggleOption(this,'syl-mode');updateLaunchInfo()"><span
+                  class="option-dot"></span>Case Study</button>
+            </div>
+            <div class="pcol">
+              <div class="section-heading"><span class="accent">Difficulty</span></div>
+              <button class="option-btn" onclick="toggleOption(this,'p-diff');updateLaunchInfo()"><span
+                  class="option-dot"></span>Easy</button>
+              <button class="option-btn selected" onclick="toggleOption(this,'p-diff');updateLaunchInfo()"><span
+                  class="option-dot"></span>Medium</button>
+              <button class="option-btn" onclick="toggleOption(this,'p-diff');updateLaunchInfo()"><span
+                  class="option-dot"></span>Hard</button>
+              <button class="option-btn" onclick="toggleOption(this,'p-diff');updateLaunchInfo()"><span
+                  class="option-dot"></span>Mixed</button>
+            </div>
+            <div class="pcol">
+              <div class="section-heading"><span class="accent">Questions</span></div>
+              <button class="option-btn selected" onclick="toggleOption(this,'q-count');updateLaunchInfo()"><span
+                  class="option-dot"></span>10 Questions</button>
+              <button class="option-btn" onclick="toggleOption(this,'q-count');updateLaunchInfo()"><span
+                  class="option-dot"></span>20 Questions</button>
+              <button class="option-btn" onclick="toggleOption(this,'q-count');updateLaunchInfo()"><span
+                  class="option-dot"></span>50 Questions</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Timer Config — only visible when Mock Test is selected -->
+          <div class="ptimer-row" id="ptimer-row">
+            <div class="ptimer-head">
+              <div class="ptimer-title">
+                <span>Timer per Question</span>
+                <span class="ptimer-badge">MOCK TEST ONLY</span>
+              </div>
+              <div class="ptimer-preview" id="ptimer-preview">2 min / question · 20 min total</div>
+            </div>
+            <div class="ptimer-presets">
+              <div class="ptimer-preset" id="tpre-60" onclick="selectTimerPreset(60,this)">
+                <div class="ptimer-preset-val">1 min</div>
+                <div class="ptimer-preset-lbl">per question</div>
+              </div>
+              <div class="ptimer-preset active" id="tpre-120" onclick="selectTimerPreset(120,this)">
+                <div class="ptimer-preset-val">2 min</div>
+                <div class="ptimer-preset-lbl">per question</div>
+              </div>
+              <div class="ptimer-preset" id="tpre-180" onclick="selectTimerPreset(180,this)">
+                <div class="ptimer-preset-val">3 min</div>
+                <div class="ptimer-preset-lbl">per question</div>
+              </div>
+              <div class="ptimer-preset" id="tpre-300" onclick="selectTimerPreset(300,this)">
+                <div class="ptimer-preset-val">5 min</div>
+                <div class="ptimer-preset-lbl">per question</div>
+              </div>
+              <div class="ptimer-preset custom-preset" id="tpre-custom" onclick="selectTimerPreset('custom',this)">
+                <div class="ptimer-preset-val">Custom</div>
+                <div class="ptimer-preset-lbl">set your own</div>
+              </div>
+            </div>
+            <div class="ptimer-custom" id="ptimer-custom">
+              <span class="ptimer-custom-label">Minutes per question:</span>
+              <input class="ptimer-custom-input" id="ptimer-custom-input" type="number" min="1" max="60" value="2"
+                oninput="onCustomTimerInput(this.value)" onchange="onCustomTimerInput(this.value)" />
+              <span class="ptimer-custom-unit">min / question</span>
+            </div>
+          </div>
+
+          <!-- Launch row -->
+          <div class="plaunch-row">
+            <div class="plaunch-info" id="plaunch-info">Quiz · 10 Qs · Medium · Full Syllabus</div>
+            <button class="plaunch-btn" onclick="launchPractice()">
+              <span id="plaunch-icon"></span>
+              <span id="plaunch-txt">Launch Quiz</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Sub Panel: Explain ── -->
+        <div class="sub-panel" id="panel-explain">
+          <div class="divider"></div>
+          <div class="section-heading"><span class="accent">Explain Type</span> — choose what to explain</div>
+
+          <div class="explain-type-grid">
+            <div class="explain-type-card selected" id="etype-numerical" onclick="selectExplainType('numerical')">
+              <div class="etc-title">Numerical</div>
+              <div class="etc-desc">Step-by-step solution with formula, concept &amp; final answer</div>
+            </div>
+            <div class="explain-type-card" id="etype-theory" onclick="selectExplainType('theory')">
+              <div class="etc-title">Theory Answer</div>
+              <div class="etc-desc">1-liner, bullet points, or full paragraphs — you choose size</div>
+            </div>
+            <div class="explain-type-card" id="etype-code" onclick="selectExplainType('code')">
+              <div class="etc-title">Code Answer</div>
+              <div class="etc-desc">Code with line-by-line explanation, requirements &amp; output</div>
+            </div>
+            <div class="explain-type-card" id="etype-example" onclick="selectExplainType('example')">
+              <div class="etc-title">Example Guide</div>
+              <div class="etc-desc">Topic explained with real-world examples &amp; example code</div>
+            </div>
+          </div>
+
+          <!-- Numerical sub-options -->
+          <div class="explain-sub active" id="esub-numerical">
+            <div class="divider"></div>
+            <div class="section-heading"><span class="accent">Numerical Options</span></div>
+            <div class="options-2col">
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Show each
+                step clearly</button>
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> State
+                formula used</button>
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Name
+                concept / law</button>
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Highlight
+                final answer</button>
+              <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Include units
+                check</button>
+              <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Add similar
+                example</button>
+            </div>
+          </div>
+
+          <!-- Theory sub-options -->
+          <div class="explain-sub" id="esub-theory">
+            <div class="divider"></div>
+            <div class="section-heading"><span class="accent">Theory Answer Size</span></div>
+            <div class="options-3col">
+              <button class="option-btn selected" onclick="toggleOption(this, 'theory-size')"><span
+                  class="option-dot"></span> 1-Liner</button>
+              <button class="option-btn" onclick="toggleOption(this, 'theory-size')"><span class="option-dot"></span>
+                Key Points</button>
+              <button class="option-btn" onclick="toggleOption(this, 'theory-size')"><span class="option-dot"></span>
+                Short Paragraph</button>
+              <button class="option-btn" onclick="toggleOption(this, 'theory-size')"><span class="option-dot"></span>
+                Long Paragraph</button>
+              <button class="option-btn" onclick="toggleOption(this, 'theory-size')"><span class="option-dot"></span>
+                Detailed Essay</button>
+            </div>
+            <div class="divider"></div>
+            <div class="section-heading" style="margin-top:0;"><span class="accent">Include</span></div>
+            <div class="options-2col">
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span>
+                Definition</button>
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Key
+                Properties</button>
+              <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Advantages &amp;
+                Disadvantages</button>
+              <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Comparison
+                Table</button>
+            </div>
+          </div>
+
+          <!-- Code sub-options -->
+          <div class="explain-sub" id="esub-code">
+            <div class="divider"></div>
+            <div class="section-heading"><span class="accent">Code Language</span></div>
+            <div class="options-3col">
+              <button class="option-btn selected" onclick="toggleOption(this, 'explain-lang')"><span
+                  class="option-dot"></span> Python</button>
+              <button class="option-btn" onclick="toggleOption(this, 'explain-lang')"><span class="option-dot"></span>
+                C++</button>
+              <button class="option-btn" onclick="toggleOption(this, 'explain-lang')"><span class="option-dot"></span>
+                Java</button>
+              <button class="option-btn" onclick="toggleOption(this, 'explain-lang')"><span class="option-dot"></span>
+                C</button>
+              <button class="option-btn" onclick="toggleOption(this, 'explain-lang')"><span class="option-dot"></span>
+                JavaScript</button>
+              <button class="option-btn" onclick="toggleOption(this, 'explain-lang')"><span class="option-dot"></span>
+                Other</button>
+            </div>
+            <div class="divider"></div>
+            <div class="section-heading" style="margin-top:0;"><span class="accent">Include in Code Explanation</span>
+            </div>
+            <div class="options-2col">
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Full code
+                with comments</button>
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span>
+                Line-by-line explanation</button>
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span>
+                Requirements to run</button>
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Sample
+                output</button>
+              <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Common errors
+                &amp; fixes</button>
+              <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Time &amp; space
+                complexity</button>
+            </div>
+          </div>
+
+          <!-- Example Guide sub-options -->
+          <div class="explain-sub" id="esub-example">
+            <div class="divider"></div>
+            <div class="section-heading"><span class="accent">Example Guide Options</span></div>
+            <div class="options-2col">
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Plain
+                language explanation</button>
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span>
+                Real-world analogy</button>
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Code
+                example (with context)</button>
+              <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Industry
+                use case</button>
+              <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Common
+                misconceptions</button>
+              <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Visual ASCII
+                diagram</button>
+            </div>
+            <div class="divider"></div>
+            <div class="section-heading" style="margin-top:0;"><span class="accent">Code Language for Examples</span>
+            </div>
+            <div class="options-3col">
+              <button class="option-btn selected" onclick="toggleOption(this, 'example-lang')"><span
+                  class="option-dot"></span> Python</button>
+              <button class="option-btn" onclick="toggleOption(this, 'example-lang')"><span class="option-dot"></span>
+                C++</button>
+              <button class="option-btn" onclick="toggleOption(this, 'example-lang')"><span class="option-dot"></span>
+                Java</button>
+              <button class="option-btn" onclick="toggleOption(this, 'example-lang')"><span class="option-dot"></span>
+                JavaScript</button>
+              <button class="option-btn" onclick="toggleOption(this, 'example-lang')"><span class="option-dot"></span>
+                C</button>
+              <button class="option-btn" onclick="toggleOption(this, 'example-lang')"><span class="option-dot"></span>
+                Other</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-heading">
+            <span class="accent">Output File Format</span>
+          </div>
+          <div class="options-3col">
+            <button class="option-btn selected" onclick="toggleOption(this, 'explain-file-fmt')"><span
+                class="option-dot"></span> Markdown (.md)</button>
+            <button class="option-btn" onclick="toggleOption(this, 'explain-file-fmt')"><span class="option-dot"></span>
+              Text Document (.txt)</button>
+            <button class="option-btn" onclick="toggleOption(this, 'explain-file-fmt')"><span class="option-dot"></span>
+              Word Document (.docx)</button>
+          </div>
+        </div><!-- /panel-explain -->
+
+      </div><!-- /Card 02 -->
+
+      <!-- Card 03 — Generate -->
+      <div class="card" id="card-03-generate">
+        <div class="card-label">03 — Generate</div>
+        <div class="card-title">Ready to roll?</div>
+        <p style="color:var(--muted); font-size:0.85rem;">Make sure you've entered your topic and selected the options
+          above.</p>
+        <div class="btn-row">
+          <button class="generate-btn" id="btn-gen-learning" onclick="generate('learning')"><span></span> Generate
+            Now</button>
+          <button class="generate-btn generate-btn-alt" onclick="clearAll('learning')"><span></span> Clear All</button>
+        </div>
+      </div>
+
+      <div class="loading-indicator" id="loading-learning">
+        <span class="gen-box-spinner"><span class="logo-icon-inner">◈</span></span>
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <span class="loading-msg" id="loading-msg-learning">NerdLume AI agents are generating your content…</span>
+      </div>
+
+      <!-- Output -->
+      <div class="output-area" id="output-learning">
+        <div class="card-label" style="margin-bottom:14px;">04 — Output</div>
+
+        <div class="output-card">
+          <div class="output-header">
+            <div class="output-title" id="learning-out-title">NOTES.TXT</div>
+            <div class="output-actions">
+              <button class="output-action-btn" id="learning-dl-btn"
+                onclick="downloadOutput('out-learning-content', 'notes.txt')">Download</button>
+              <button class="output-action-btn" onclick="copyOutput('out-learning-content')">Copy</button>
+            </div>
+          </div>
+          <div class="output-content" id="out-learning-content"></div>
+        </div>
+
+        <div class="output-card" id="out-answerkey-wrap" style="display:none;">
+          <div class="output-header">
+            <div class="output-title">ANSWER_KEY.TXT</div>
+            <div class="output-actions">
+              <button class="output-action-btn"
+                onclick="downloadOutput('out-answerkey-content', 'answer_key.txt')">Download</button>
+              <button class="output-action-btn" onclick="copyOutput('out-answerkey-content')">Copy</button>
+            </div>
+          </div>
+          <div class="output-content" id="out-answerkey-content"></div>
+        </div>
+
+
+
+        <!-- Practice Launch Button (shown after practice generation) -->
+        <div id="practice-launch-wrap" style="display:none;margin-top:16px;"></div>
+
+      </div>
+
+    </div><!-- /mode-learning -->
+
+
+    <!-- ══════════════════════════════════════════
+       QUICK MODE
+  ══════════════════════════════════════════ -->
+    <div class="mode-panel" id="mode-quick">
+
+      <!-- Card 01 — Input -->
+      <div class="card">
+        <div class="card-label">01 — Input</div>
+        <div class="card-title">Describe Your Task</div>
+        <textarea class="topic-input" id="quick-input" style="min-height:115px;"
+          placeholder="Describe your assignment or practical topic...&#10;&#10;Examples:&#10;— Create a C++ library management system with CRUD&#10;— Assignment on sorting algorithms with time complexity&#10;— Practical: Implement BFS and DFS in Python"></textarea>
+
+        <div class="upload-row">
+          <div class="card-title" style="margin-bottom:0; font-size:0.88rem;">Reference Files</div>
+          <span class="optional-badge">Optional</span>
+        </div>
+
+        <div class="file-zone" id="quick-dropzone" ondragover="handleDrag(event, this)"
+          ondragleave="handleDragLeave(event, this)" ondrop="handleDrop(event, this, 'quick-files')">
+          <input type="file" id="quick-file-input" multiple accept=".pdf,.doc,.docx,.txt"
+            onchange="handleFileInput(event, 'quick-files')">
+          <div class="file-icon"><i data-lucide="upload-cloud" style="width:28px;height:28px;color:var(--accent);"></i>
+          </div>
+          <p><strong>Drop reference files here</strong> or click to browse</p>
+          <div class="file-types">
+            <span class="file-type-tag">PDF</span>
+            <span class="file-type-tag">DOCX</span>
+            <span class="file-type-tag">TXT</span>
+          </div>
+        </div>
+        <div class="uploaded-files" id="quick-files"></div>
+      </div>
+
+      <!-- Card 02 — Task Type -->
+      <div class="card">
+        <div class="card-label">02 — Task Type</div>
+        <div class="card-title">What do you need?</div>
+
+        <div class="quick-options">
+          <div class="quick-option-card selected" onclick="selectQuickMode('assignment', this)">
+            <div class="qoc-title">Assignment</div>
+            <div class="qoc-desc">Structured document with theory, analysis &amp; code</div>
+          </div>
+          <div class="quick-option-card" onclick="selectQuickMode('practical', this)">
+            <div class="qoc-title">Practical File</div>
+            <div class="qoc-desc">Full lab practical with aim, procedure, code &amp; output</div>
+          </div>
+        </div>
+
+        <!-- Assignment Options -->
+        <div class="sub-panel active" id="panel-assignment">
+          <div class="divider"></div>
+          <div class="section-heading">
+            <span class="accent">Assignment Sections</span>
+            <small
+              style="font-size:0.65rem;color:var(--muted);text-transform:none;letter-spacing:0;">(multi-select)</small>
+          </div>
+          <div class="options-2col">
+            <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Theoretical
+              Answers</button>
+            <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Code
+              Generation</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> ASCII Diagrams &amp;
+              Flowcharts</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> References &amp;
+              Citations</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Summary /
+              Abstract</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Table of
+              Contents</button>
+          </div>
+          <div class="divider"></div>
+          <div class="section-heading">
+            <span class="accent">Output File Format</span>
+          </div>
+          <div class="options-3col">
+            <button class="option-btn selected" onclick="toggleOption(this, 'assignment-file-fmt')"><span
+                class="option-dot"></span> Word Document (.docx)</button>
+            <button class="option-btn" onclick="toggleOption(this, 'assignment-file-fmt')"><span
+                class="option-dot"></span> Markdown (.md)</button>
+            <button class="option-btn" onclick="toggleOption(this, 'assignment-file-fmt')"><span
+                class="option-dot"></span> Text Document (.txt)</button>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-heading">
+            <span class="accent">Content Additions</span>
+            <small
+              style="font-size:0.65rem;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400;">(multi-select)</small>
+          </div>
+          <div class="options-3col">
+            <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Generated
+              Text</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> ASCII
+              Diagrams</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Data Graphs
+              (CSV/XLSX)</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Summarize Uploaded
+              Files</button>
+          </div>
+        </div>
+
+        <!-- Practical Options -->
+        <div class="sub-panel" id="panel-practical">
+          <div class="divider"></div>
+          <div class="section-heading">
+            <span class="accent">Practical Sections</span>
+            <small
+              style="font-size:0.65rem;color:var(--muted);text-transform:none;letter-spacing:0;">(multi-select)</small>
+          </div>
+          <div class="options-2col">
+            <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Aim &amp;
+              Objective</button>
+            <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Theory
+              Background</button>
+            <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Procedure /
+              Algorithm</button>
+            <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Code with
+              Comments</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Expected
+              Output</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Viva
+              Questions</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Conclusion</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Result
+              Table</button>
+          </div>
+          <div class="divider"></div>
+          <div class="section-heading"><span class="accent">Code Language</span></div>
+          <div class="options-3col">
+            <button class="option-btn selected" onclick="toggleOption(this, 'lang-p')"><span class="option-dot"></span>
+              Python</button>
+            <button class="option-btn" onclick="toggleOption(this, 'lang-p')"><span class="option-dot"></span>
+              C++</button>
+            <button class="option-btn" onclick="toggleOption(this, 'lang-p')"><span class="option-dot"></span>
+              Java</button>
+            <button class="option-btn" onclick="toggleOption(this, 'lang-p')"><span class="option-dot"></span>
+              C</button>
+            <button class="option-btn" onclick="toggleOption(this, 'lang-p')"><span class="option-dot"></span>
+              MATLAB</button>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-heading">
+            <span class="accent">Output File Format</span>
+          </div>
+          <div class="options-3col">
+            <button class="option-btn selected" onclick="toggleOption(this, 'practical-file-fmt')"><span
+                class="option-dot"></span> Word Document (.docx)</button>
+            <button class="option-btn" onclick="toggleOption(this, 'practical-file-fmt')"><span
+                class="option-dot"></span> Markdown (.md)</button>
+            <button class="option-btn" onclick="toggleOption(this, 'practical-file-fmt')"><span
+                class="option-dot"></span> Text Document (.txt)</button>
+          </div>
+
+          <div class="divider"></div>
+          <div class="section-heading">
+            <span class="accent">Content Additions</span>
+            <small
+              style="font-size:0.65rem;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400;">(multi-select)</small>
+          </div>
+          <div class="options-3col">
+            <button class="option-btn selected" onclick="toggleMulti(this)"><span class="option-dot"></span> Generated
+              Text</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> ASCII
+              Diagrams</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Data Graphs
+              (CSV/XLSX)</button>
+            <button class="option-btn" onclick="toggleMulti(this)"><span class="option-dot"></span> Summarize Uploaded
+              Files</button>
+          </div>
+        </div>
+      </div><!-- /Card 02 -->
+
+      <!-- Card 03 — Generate -->
+      <div class="card">
+        <div class="card-label">03 — Generate</div>
+        <div class="card-title">Quick fire!</div>
+        <p style="color:var(--muted); font-size:0.85rem;">Describe your task above and hit generate.</p>
+        <div class="btn-row">
+          <button class="generate-btn" id="btn-gen-quick" onclick="generate('quick')"><span></span> Generate
+            Now</button>
+          <button class="generate-btn generate-btn-alt" onclick="clearAll('quick')"><span></span> Clear</button>
+        </div>
+      </div>
+
+      <div class="loading-indicator" id="loading-quick">
+        <span class="gen-box-spinner"><span class="logo-icon-inner">◈</span></span>
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <span class="loading-msg" id="loading-msg-quick">Cooking up your content...</span>
+      </div>
+
+      <!-- Output -->
+      <div class="output-area" id="output-quick">
+        <div class="card-label" style="margin-bottom:14px;">04 — Output</div>
+        <div class="output-card">
+          <div class="output-header">
+            <div class="output-title" id="quick-output-title">ASSIGNMENT.TXT</div>
+            <div class="output-actions">
+              <button class="output-action-btn" id="quick-dl-btn"
+                onclick="downloadOutput('quick-output-content', 'assignment.txt')">Download</button>
+              <button class="output-action-btn" onclick="copyOutput('quick-output-content')">Copy</button>
+            </div>
+          </div>
+          <div class="output-content" id="quick-output-content"></div>
+        </div>
+      </div>
+
+    </div><!-- /mode-quick -->
+
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast">
+    <span class="toast-dot"></span>
+    <span id="toast-msg">Done!</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="bg-animation.js"></script>
+  <script src="tracker.js"></script>
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.lucide) { lucide.createIcons(); }
+    });
+  </script>
+</body>
+
+</html>

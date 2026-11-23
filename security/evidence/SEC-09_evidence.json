@@ -1,0 +1,5 @@
+{
+  "test_id": "TC-A06",
+  "description": "Session tokens returned only in JSON body without HttpOnly, SameSite cookies",
+  "vulnerable": true
+}

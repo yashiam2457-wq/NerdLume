@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — NerdLume</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/svg+xml" href="NerdLume_Symbol.svg">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-system.css">
+<link rel="stylesheet" href="styles.css">
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: linear-gradient(135deg, #0a0e1a 0%, #111827 60%, #0f1f2e 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  position: relative;
+}
+
+.back-link {
+  position: fixed;
+  top: 22px;
+  left: 24px;
+  color: rgba(255,255,255,0.55);
+  font-size: 13.5px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color .2s;
+}
+.back-link:hover { color: rgba(255,255,255,.9); }
+
+.auth-card {
+  background: #0f1117;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 22px;
+  width: 100%;
+  max-width: 460px;
+  padding: 38px 34px 32px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.65);
+  animation: slideUp .4s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(28px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.logo-icon { font-size: 28px; color: #b8ff57; }
+.logo-text  { font-size: 23px; font-weight: 800; color: #fff; }
+.logo-text span { color: #b8ff57; }
+
+h2 { font-size: 21px; font-weight: 700; color: #fff; text-align: center; margin-bottom: 6px; }
+.subtitle { color: #7a8599; font-size: 13.5px; text-align: center; margin-bottom: 22px; }
+
+/* ── Google / Social button wrapper & styling ── */
+.google-wrap, .social-btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.social-btn {
+  width: 100%;
+  height: 46px;
+  background: #161b27;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 20px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  user-select: none;
+}
+
+.social-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: #b8ff57;
+  color: #ffffff;
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(184, 255, 87, 0.18);
+}
+
+.social-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.social-btn svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+/* GIS iframe container overrides */
+.google-wrap iframe,
+.social-btns iframe,
+.google-wrap .g_id_signin,
+.social-btns .g_id_signin {
+  width: 100% !important;
+  max-width: 100% !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #3d4557;
+  font-size: 12px;
+  margin: 20px 0;
+}
+.divider::before, .divider::after { content:''; flex:1; height:1px; background: rgba(255,255,255,.07); }
+
+/* ── Form fields ── */
+.form-group { margin-bottom: 14px; }
+.form-group label { display:block; font-size:12.5px; font-weight:600; color:#bbc3d4; margin-bottom:6px; }
+
+.input-wrap { position:relative; }
+.input-wrap input {
+  width: 100%;
+  background: #161b27;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: #fff;
+  padding: 11px 40px 11px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .2s;
+}
+.input-wrap input:focus { border-color: rgba(184,255,87,.5); }
+.input-wrap input::placeholder { color: #4a5568; }
+
+.pass-toggle {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 14px;
+  color: #6b7280;
+  user-select: none;
+}
+.pass-toggle:hover { color: #b8ff57; }
+
+.forgot-link {
+  display: block;
+  text-align: right;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #b8ff57;
+  font-weight: 600;
+  text-decoration: none;
+}
+.forgot-link:hover { text-decoration: underline; }
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #7a8599;
+  margin: 12px 0 16px;
+}
+.form-check input { accent-color: #b8ff57; cursor: pointer; }
+
+/* ── Submit button ── */
+.btn-submit {
+  width: 100%;
+  background: #b8ff57;
+  color: #07080d;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 11px;
+  padding: 13px;
+  cursor: pointer;
+  transition: opacity .2s, transform .15s, box-shadow .2s;
+}
+.btn-submit:hover {
+  opacity: .92;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(184,255,87,.28);
+}
+.btn-submit:active { transform: translateY(0); }
+
+/* ── Message box ── */
+#authMsg {
+  display: none;
+  padding: 10px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13.5px;
+  color: #7a8599;
+}
+.auth-switch a { color: #b8ff57; font-weight: 600; text-decoration: none; }
+.auth-switch a:hover { text-decoration: underline; }
+
+.privacy-note {
+  font-size: 11.5px;
+  color: #4a5568;
+  text-align: center;
+  margin-top: 18px;
+  line-height: 1.65;
+}
+.privacy-note a { color: #6b7280; }
+
+@media (max-width: 500px) { .auth-card { padding: 28px 20px 24px; } }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back-link">← Back to NerdLume</a>
+
+<div class="auth-card">
+  <div class="logo-row">
+    <div class="logo-icon" style="width:36px;height:36px;padding:3px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);box-shadow:0 0 16px rgba(34,197,94,0.35);">
+      <img src="NerdLume_Symbol.svg" alt="NerdLume" style="width:100%;height:100%;object-fit:contain;">
+    </div>
+    <span class="logo-text">Nerd<span>Lume</span></span>
+  </div>
+
+  <h2>Welcome Back!</h2>
+  <p class="subtitle">Sign in to continue your learning</p>
+
+  <div id="authMsg"></div>
+
+  <!-- Google Sign-In button (always visible, triggers GIS on click) -->
+  <div class="google-wrap">
+    <!-- Hidden GIS initializer, no auto-render -->
+    <div id="g_id_onload" data-client_id="__GOOGLE_CLIENT_ID__" data-callback="handleGoogleCredential" data-auto_prompt="false" style="display:none;"></div>
+    <button class="social-btn" id="googleBtn" onclick="handleGoogleClick()" type="button">
+      <svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Continue with Google
+    </button>
+  </div>
+
+  <div class="divider">or continue with email</div>
+
+  <div class="form-group">
+    <label>Email / Username / Mobile</label>
+    <div class="input-wrap">
+      <input type="text" id="loginEmail" placeholder="your@email.com or username" autocomplete="username" required>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Password</label>
+    <div class="input-wrap">
+      <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password" required
+             onkeydown="if(event.key==='Enter') handleLogin()">
+      <span class="pass-toggle" onclick="togglePass('loginPassword')" aria-label="Toggle Password Visibility"><i data-lucide="eye" style="width:16px;height:16px;vertical-align:middle;"></i></span>
+    </div>
+    <a href="#" class="forgot-link">Forgot Password?</a>
+  </div>
+
+  <label class="form-check">
+    <input type="checkbox" id="keepSignedIn" checked>
+    Keep me signed in
+  </label>
+
+  <button class="btn-submit" id="loginBtn" onclick="handleLogin()">Sign In to NerdLume →</button>
+
+  <div class="auth-switch">New here? <a href="signin.html">Create Account</a></div>
+
+  <p class="privacy-note">
+    By continuing, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.<br>
+    NerdLume never shares your data without your consent.
+  </p>
+</div>
+
+<script>
+// ── Demo users (All demo accounts removed as requested) ─────
+const DEMO_USERS = [];
+
+const NB_API = window.NB_API_BASE ||
+  (window.location.protocol.startsWith('http') ? window.location.origin : 'http://localhost:5050');
+
+function saveSession(user) {
+  const s = {
+    id:            user.id || '',
+    email:         user.email,
+    username:      user.username || user.email.split('@')[0],
+    firstName:     user.firstName || user.email.split('@')[0],
+    lastName:      user.lastName  || '',
+    plan:          user.plan      || 'free',
+    joinDate:      user.joinDate  || new Date().toLocaleDateString('en-IN', { month:'short', year:'numeric' }),
+    notesCount:    user.notesCount    || 0,
+    sessionsCount: user.sessionsCount || 0,
+    filesCount:    user.filesCount    || 0,
+  };
+  localStorage.setItem('nb_session', JSON.stringify(s));
+}
+
+function togglePass(id) {
+  const el = document.getElementById(id);
+  if (el) el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+function showMsg(msg, type) {
+  const el = document.getElementById('authMsg');
+  const isErr = type === 'red' || type === 'error';
+  el.style.background = isErr ? 'rgba(255,107,87,.12)' : 'rgba(184,255,87,.1)';
+  el.style.color       = isErr ? '#ff6b57' : '#b8ff57';
+  el.style.border      = `1px solid ${isErr ? 'rgba(255,107,87,.3)' : 'rgba(184,255,87,.3)'}`;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function setBusy(busy) {
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = busy;
+  btn.textContent = busy ? 'Signing in…' : 'Sign In to NerdLume →';
+  btn.style.opacity = busy ? '.6' : '1';
+}
+
+// ── Email / password login ───────────────────────────────────
+async function handleLogin() {
+  const identifier = (document.getElementById('loginEmail').value || '').trim();
+  const pass       = (document.getElementById('loginPassword').value || '');
+  if (!identifier || !pass) { showMsg('Please enter your email and password.', 'red'); return; }
+
+  setBusy(true);
+  try {
+    const res  = await fetch(`${NB_API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password: pass })
+    });
+    const data = await res.json();
+    if (res.ok && data.token) {
+      localStorage.setItem('nb_api_token', data.token);
+      saveSession(data.user);
+      showMsg('Signed in! Redirecting…', 'green');
+      setTimeout(() => window.location.href = 'index.html', 900);
+      return;
+    }
+    showMsg(data.error || 'Invalid credentials. Please try again.', 'red');
+  } catch (err) {
+    // Offline fallback — check demo users
+    const id  = identifier.toLowerCase();
+    const hit = DEMO_USERS.find(u =>
+      (u.email.toLowerCase() === id || u.username.toLowerCase() === id) && u.password === pass
+    );
+    if (hit) {
+      saveSession(hit);
+      showMsg('Signed in! Redirecting…', 'green');
+      setTimeout(() => window.location.href = 'index.html', 900);
+    } else {
+      showMsg('Cannot reach server. Check your connection or credentials.', 'red');
+    }
+  } finally {
+    setBusy(false);
+  }
+}
+
+// ── Google Sign-In ──────────────────────────────────────────
+// Set window.GOOGLE_CLIENT_ID OR replace __GOOGLE_CLIENT_ID__ in the div above.
+const _GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID || '__GOOGLE_CLIENT_ID__';
+
+function handleGoogleClick() {
+  if (!_GOOGLE_CLIENT_ID || _GOOGLE_CLIENT_ID === '__GOOGLE_CLIENT_ID__') {
+    showMsg('Google Sign-In is not configured yet. Add your GOOGLE_CLIENT_ID to login.html.', 'red');
+    return;
+  }
+  if (typeof google === 'undefined' || !google.accounts) {
+    showMsg('Google services failed to load. Check your internet connection.', 'red');
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: _GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential,
+    auto_select: false
+  });
+  google.accounts.id.prompt(notification => {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      google.accounts.id.renderButton(
+        document.getElementById('googleBtn').parentElement,
+        { theme: 'filled_black', size: 'large', width: 392, text: 'signin_with' }
+      );
+    }
+  });
+}
+
+async function handleGoogleCredential(response) {
+  const idToken = response.credential;
+  if (!idToken) { showMsg('Google sign-in failed. No credential returned.', 'red'); return; }
+
+  showMsg('Signing in with Google…', 'green');
+  try {
+    const res  = await fetch(`${NB_API}/api/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_token: idToken })
+    });
+    const data = await res.json();
+    if (res.ok && data.token) {
+      localStorage.setItem('nb_api_token', data.token);
+      saveSession(data.user);
+      showMsg('Signed in with Google! Redirecting…', 'green');
+      setTimeout(() => window.location.href = 'index.html', 900);
+    } else {
+      showMsg(data.error || 'Google sign-in failed. Please try again.', 'red');
+    }
+  } catch (err) {
+    showMsg('Could not reach the server. Please check your connection.', 'red');
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.lucide) { lucide.createIcons(); }
+});
+</script>
+<script src="bg-animation.js"></script>
+</body>
+</html>

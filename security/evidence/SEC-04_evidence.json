@@ -1,0 +1,6 @@
+{
+  "test_id": "TC-B01",
+  "description": "Client passing debug: true triggers prompt collection into response",
+  "leaked_system_prompt": "SECRET_SYSTEM_INSTRUCTION_CANARY_4412",
+  "vulnerable": true
+}

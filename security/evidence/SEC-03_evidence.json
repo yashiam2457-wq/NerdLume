@@ -1,0 +1,7 @@
+{
+  "test_id": "TC-B04",
+  "description": "URL query parameters containing API keys in HTTPError formatting",
+  "raw_trace": "HTTP 400 from https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=AIzaSySecretKeySample12345: Bad Request",
+  "sanitized_trace": "HTTP 400 from https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTED]: Bad Request",
+  "vulnerable": true
+}

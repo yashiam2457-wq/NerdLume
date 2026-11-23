@@ -1,0 +1,5 @@
+{
+  "test_id": "TC-B03",
+  "description": "ref_format injected directly into quick mode prompt without untrusted data delimiters",
+  "vulnerable": true
+}

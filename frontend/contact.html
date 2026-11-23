@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NerdLume — Help & Support</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="NerdLume_Symbol.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="design-system.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #11182a;
+      --panel2: #18223a;
+      --text: #f7f9fc;
+      --muted: #9aa6bf;
+      --accent: #b8ff57;
+      --accent2: #57c8ff;
+      --danger: #ff6b57;
+      --border: rgba(255,255,255,0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Syne', sans-serif;
+      background: radial-gradient(circle at top, #162139, #090c18 65%);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 18px 48px;
+    }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.35rem;
+    }
+    .brand span { color: var(--accent); }
+    .back {
+      color: var(--text); text-decoration: none; border: 1px solid var(--border); padding: 9px 14px;
+      border-radius: 10px; background: rgba(255,255,255,0.03);
+    }
+    .hero {
+      background: linear-gradient(135deg, rgba(184,255,87,0.10), rgba(87,200,255,0.08));
+      border: 1px solid rgba(184,255,87,0.18); border-radius: 20px; padding: 22px; margin-bottom: 22px;
+    }
+    .hero h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 3vw, 2.6rem); }
+    .hero p { margin: 0; color: var(--muted); max-width: 760px; line-height: 1.55; }
+    .searchbar {
+      margin-top: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    }
+    .searchbar input {
+      flex: 1 1 240px; min-width: 240px; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04); color: var(--text); outline: none;
+    }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;
+      margin-top: 20px;
+    }
+    .card {
+      background: rgba(10, 16, 33, 0.78); border: 1px solid var(--border); border-radius: 16px; padding: 18px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+      background: rgba(87,200,255,0.1); color: var(--accent2); font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+    .card h3 { margin: 0 0 8px; }
+    .card p, .card li { color: var(--muted); line-height: 1.5; }
+    .card a { color: var(--accent); text-decoration: none; }
+    .card ul { margin: 10px 0 0; padding-left: 18px; }
+    .muted { color: var(--muted); }
+    .empty { display: none; padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px dashed var(--border); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">Nerd<span>Lume</span></div>
+      <a href="index.html" class="back">← Back to app</a>
+    </div>
+
+    <section class="hero">
+      <h1>Help & Support</h1>
+      <p>Contact the NerdLume team, browse quick guides, and search for the help you need before you generate your next note, quiz, or explanation.</p>
+      <div class="searchbar">
+        <input id="support-search" type="text" placeholder="Search contacts, guides, or help topics..." />
+      </div>
+    </section>
+
+    <div class="grid">
+      <div class="card support-item" data-text="support email help contact team hello@nerdlume.in">
+        <div class="pill">Email Support</div>
+        <h3>yashiam2457@gmail.com</h3>
+        <p>For billing questions, plan changes, feature access, or account help.</p>
+      </div>
+
+      <div class="card support-item" data-text="support phone team contact number +91 98765 43210">
+        <div class="pill">Phone</div>
+        <h3>+91 63940 09063</h3>
+        <p>Reach the support desk between 11:00 AM and 4:00 PM.</p>
+      </div>
+
+      <div class="card support-item" data-text="support whatsapp customer service contact">
+        <div class="pill">WhatsApp</div>
+        <h3>+91 63940 09063</h3>
+        <p>Quick replies for guidance, plan upgrade requests, and app help.</p>
+      </div>
+
+      <div class="card support-item" data-text="guide explain mode theory example access premium diamond free plan">
+        <div class="pill">Quick Guide</div>
+        <h3>How to use Explain Mode</h3>
+        <ul>
+          <li>Free users can open the Plans popup to upgrade.</li>
+          <li>Premium users can use Theory Answer and Example Guide.</li>
+          <li>Diamond users unlock all explain options, including Numerical and Code.</li>
+        </ul>
+      </div>
+
+      <div class="card support-item" data-text="guide notes plans upgrade premium diamond help support">
+        <div class="pill">Plan Guide</div>
+        <h3>Plan Access Rules</h3>
+        <ul>
+          <li>Free: Explain Mode is fully blocked.</li>
+          <li>Premium: Theory and Example Guide are available.</li>
+          <li>Diamond: Full explain access is unlocked.</li>
+        </ul>
+      </div>
+
+      <div class="card support-item" data-text="guide search bar how to find support contact page use nerdlume">
+        <div class="pill">Find Help Fast</div>
+        <h3>How to search this page</h3>
+        <p>Use the search input above to type keywords like <strong>plan</strong>, <strong>premium</strong>, <strong>diamond</strong>, or <strong>explain mode</strong>.</p>
+      </div>
+    </div>
+
+    <div id="empty-state" class="empty">No matching support item found. Try another keyword like “plan”, “premium”, or “guide”.</div>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('support-search');
+    const items = Array.from(document.querySelectorAll('.support-item'));
+    const emptyState = document.getElementById('empty-state');
+
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+
+      items.forEach(item => {
+        const text = (item.dataset.text || item.textContent).toLowerCase();
+        const match = !term || text.includes(term);
+        item.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+
+      emptyState.style.display = visible ? 'none' : 'block';
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.lucide) { lucide.createIcons(); }
+    });
+  </script>
+</body>
+</html>

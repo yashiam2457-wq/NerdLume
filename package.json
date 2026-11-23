@@ -1,0 +1,20 @@
+{
+  "name": "nerdlume-monorepo",
+  "version": "2.0.0",
+  "private": true,
+  "description": "NerdLume — AI-Powered Smart Study & Learning Platform Monorepo",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "build:static": "npm run build --prefix frontend",
+    "start": "npm run start --prefix frontend",
+    "lint": "npm run lint --prefix frontend",
+    "backend:py": "python backend/server.py",
+    "backend:node": "node backend/server.js",
+    "test:backend": "pytest backend/tests"
+  }
+}

@@ -1,0 +1,331 @@
+/* ==========================================================================
+   NerdyBro — Deployment-Ready Unified Design System (design-system.css)
+   ========================================================================== */
+
+:root {
+  /* Brand Palette */
+  --nb-bg: #090a10;
+  --nb-surface-0: #0d0f18;
+  --nb-surface-1: #131625;
+  --nb-surface-2: #1a1e32;
+  --nb-surface-3: #232842;
+  
+  --nb-border: rgba(255, 255, 255, 0.08);
+  --nb-border-hover: rgba(255, 255, 255, 0.16);
+  --nb-border-active: rgba(34, 197, 94, 0.4);
+
+  --nb-primary: #22c55e;
+  --nb-primary-hover: #16a34a;
+  --nb-primary-glow: rgba(34, 197, 94, 0.2);
+
+  --nb-accent: #6366f1;
+  --nb-accent-hover: #4f46e5;
+  --nb-accent-glow: rgba(99, 102, 241, 0.2);
+
+  --nb-diamond: #38bdf8;
+  --nb-diamond-glow: rgba(56, 189, 248, 0.2);
+
+  --nb-danger: #ef4444;
+  --nb-danger-hover: #dc2626;
+  --nb-warning: #f59e0b;
+  --nb-info: #0ea5e9;
+  --nb-success: #10b981;
+
+  --nb-text-primary: #f8fafc;
+  --nb-text-secondary: #94a3b8;
+  --nb-text-muted: #64748b;
+
+  /* Typography */
+  --nb-font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --nb-font-heading: 'Space Grotesk', 'Syne', var(--nb-font-sans);
+  --nb-font-display: 'Righteous', cursive, sans-serif;
+  --nb-font-serif: 'Playfair Display', 'Cormorant Garamond', 'Instrument Serif', Georgia, serif;
+  --nb-font-mono: 'JetBrains Mono', 'Space Mono', monospace;
+
+  /* Radii */
+  --nb-radius-xs: 4px;
+  --nb-radius-sm: 8px;
+  --nb-radius-md: 12px;
+  --nb-radius-lg: 16px;
+  --nb-radius-xl: 24px;
+  --nb-radius-full: 9999px;
+
+  /* Elevation Shadows */
+  --nb-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --nb-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5);
+  --nb-shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.6);
+  --nb-shadow-primary: 0 0 20px var(--nb-primary-glow);
+  --nb-shadow-accent: 0 0 20px var(--nb-accent-glow);
+
+  /* Transitions */
+  --nb-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --nb-transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Lucide Icon Utilities ── */
+.lucide-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25em;
+  height: 1.25em;
+  stroke-width: 2;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.lucide-sm { width: 1em; height: 1em; }
+.lucide-lg { width: 1.5em; height: 1.5em; }
+.lucide-xl { width: 2em; height: 2em; }
+
+/* ── Unified Form Controls ── */
+.nb-input,
+.nb-select,
+.nb-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--nb-surface-1);
+  border: 1px solid var(--nb-border);
+  border-radius: var(--nb-radius-md);
+  color: var(--nb-text-primary);
+  font-family: var(--nb-font-sans);
+  font-size: 14px;
+  transition: border-color var(--nb-transition-fast), box-shadow var(--nb-transition-fast);
+  outline: none;
+}
+
+.nb-input:focus,
+.nb-select:focus,
+.nb-textarea:focus {
+  border-color: var(--nb-primary);
+  box-shadow: 0 0 0 3px var(--nb-primary-glow);
+}
+
+.nb-input::placeholder,
+.nb-textarea::placeholder {
+  color: var(--nb-text-muted);
+}
+
+.nb-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--nb-text-secondary);
+  margin-bottom: 6px;
+}
+
+/* ── Unified Buttons ── */
+.nb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-family: var(--nb-font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--nb-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--nb-transition-fast);
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1.25;
+}
+
+.nb-btn-primary {
+  background: var(--nb-primary);
+  color: #000;
+  font-weight: 700;
+  box-shadow: var(--nb-shadow-primary);
+}
+
+.nb-btn-primary:hover {
+  background: var(--nb-primary-hover);
+  transform: translateY(-1px);
+}
+
+.nb-btn-secondary {
+  background: var(--nb-surface-2);
+  color: var(--nb-text-primary);
+  border-color: var(--nb-border);
+}
+
+.nb-btn-secondary:hover {
+  background: var(--nb-surface-3);
+  border-color: var(--nb-border-hover);
+}
+
+.nb-btn-outline {
+  background: transparent;
+  color: var(--nb-text-primary);
+  border-color: var(--nb-border-hover);
+}
+
+.nb-btn-outline:hover {
+  background: var(--nb-surface-1);
+  border-color: var(--nb-primary);
+}
+
+.nb-btn-danger {
+  background: var(--nb-danger);
+  color: #fff;
+}
+
+.nb-btn-danger:hover {
+  background: var(--nb-danger-hover);
+}
+
+.nb-btn:disabled,
+.nb-btn.loading {
+  opacity: 0.65;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Spinner Animation */
+@keyframes nbSpin {
+  to { transform: rotate(360deg); }
+}
+
+.nb-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: nbSpin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ── Badges & Status Pills ── */
+.nb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--nb-radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.nb-badge-free {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--nb-text-secondary);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.nb-badge-premium {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--nb-primary);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.nb-badge-diamond {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--nb-diamond);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* ── Skeleton Loading ── */
+.nb-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--nb-surface-1) 25%,
+    var(--nb-surface-2) 37%,
+    var(--nb-surface-1) 63%
+  );
+  background-size: 400% 100%;
+  animation: nbSkeletonShimmer 1.4s ease infinite;
+  border-radius: var(--nb-radius-sm);
+}
+
+@keyframes nbSkeletonShimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* ── Skeleton Shapes ── */
+.nb-skeleton-text { height: 14px; margin-bottom: 8px; width: 100%; }
+.nb-skeleton-title { height: 24px; margin-bottom: 12px; width: 60%; }
+.nb-skeleton-card { height: 140px; width: 100%; border-radius: var(--nb-radius-md); }
+
+/* ── Empty State Container ── */
+.nb-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  background: var(--nb-surface-0);
+  border: 1px dashed var(--nb-border);
+  border-radius: var(--nb-radius-lg);
+}
+
+.nb-empty-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--nb-text-muted);
+  margin-bottom: 16px;
+}
+
+.nb-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--nb-text-primary);
+  margin-bottom: 6px;
+}
+
+.nb-empty-desc {
+  font-size: 14px;
+  color: var(--nb-text-secondary);
+  max-width: 360px;
+  margin-bottom: 20px;
+}
+
+/* ── Global Toast System ── */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: var(--nb-surface-2);
+  border: 1px solid var(--nb-border-hover);
+  border-radius: var(--nb-radius-md);
+  box-shadow: var(--nb-shadow-lg);
+  color: var(--nb-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: all var(--nb-transition-base);
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: all;
+}
+
+.toast-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--nb-primary);
+  flex-shrink: 0;
+}

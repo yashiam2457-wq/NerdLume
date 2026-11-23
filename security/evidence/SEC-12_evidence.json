@@ -1,0 +1,6 @@
+{
+  "test_id": "TC-GITLEAKS",
+  "description": "NerdyBro lacks .gitignore, allowing .env, databases, and logs into commits",
+  "has_gitignore": false,
+  "vulnerable": true
+}
